@@ -81,14 +81,18 @@ php -S localhost:3000
 
 #### Option D: Deploy to GitHub Pages
 
-1. Push this folder to a GitHub repository
+1. Push this folder to a GitHub repository named `bookslaravel`
 2. Go to repository Settings > Pages
 3. Select source branch and folder
-4. Your site will be available at `https://username.github.io/repository-name`
+4. Your site will be available at `https://kianzhar.github.io/bookslaravel/`
+
+**Note:** The backend CORS has been configured to allow requests from `https://kianzhar.github.io`
 
 ### 3. Update CORS Settings
 
-If deploying to a different domain than localhost, make sure to update the backend CORS configuration in `config/cors.php` to allow your frontend domain.
+The backend CORS configuration in `config/cors.php` has been updated to allow requests from:
+- `https://kianzhar.github.io` (GitHub Pages)
+- All localhost variations for local development
 
 ## API Endpoints
 

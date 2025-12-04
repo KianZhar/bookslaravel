@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'self' data: gap: 'unsafe-inline' 'unsafe-eval'; style-src * 'self' 'unsafe-inline'; media-src *; img-src * 'self' data:; connect-src * 'self';" />
+  <title>Checkout - Book Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/mobile-responsive.css">
+  <style>
+    :root {
+      --bg-0: #0a0a0a;
+      --bg-1: #1a1a2e;
+      --bg-2: #16213e;
+      --accent-a: #ff6b6b;
+      --accent-b: #4ecdc4;
+      --accent-c: #45b7d1;
+      --glow-1: rgba(255,107,107,0.15);
+      --glow-2: rgba(78,205,196,0.10);
+      --glow-3: rgba(69,183,209,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-0); color: #ffffff; overflow-x: hidden; position: relative; }
+    .bg-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(135deg, var(--bg-0) 0%, var(--bg-1) 50%, var(--bg-2) 100%); overflow: hidden; }
+    .cursor-glow { position: absolute; width: 800px; height: 800px; border-radius: 50%; background: radial-gradient(circle, var(--glow-1) 0%, var(--glow-2) 25%, var(--glow-3) 50%, transparent 70%); pointer-events: none; transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1); transform: translate(-50%, -50%); filter: blur(2px); }
+    .cursor-trail { position: absolute; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(255,107,107,0.08) 0%, rgba(150,206,180,0.06) 40%, transparent 70%); pointer-events: none; transition: all 0.8s cubic-bezier(0.23, 1, 0.320, 1); transform: translate(-50%, -50%); filter: blur(4px); }
+    .cursor-trail-2 { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, var(--glow-2) 0%, var(--glow-1) 50%, transparent 70%); pointer-events: none; transition: all 1.2s cubic-bezier(0.23, 1, 0.320, 1); transform: translate(-50%, -50%); filter: blur(1px); }
+    .bg-gradient::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.06) 0%, transparent 30%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.05) 0%, transparent 30%), radial-gradient(circle at 50% 10%, rgba(120, 219, 255, 0.04) 0%, transparent 40%); animation: ambientGlow 10s ease-in-out infinite; }
+    @keyframes ambientGlow { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.8; } }
+    .navbar { position: fixed; top: 0; width: 100%; z-index: 1000; backdrop-filter: blur(20px); background: rgba(0, 0, 0, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.06); animation: slideDown 0.8s ease-out; }
+    @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .nav-container { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: center; align-items: center; gap: 2rem; }
+    .nav-brand { opacity: 0; animation: fadeInUp 0.8s ease-out 0.2s forwards; text-align: center; }
+    .brand-logo { font-size: 1.8rem; font-weight: 700; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 3s ease-in-out infinite; }
+    @keyframes shimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .brand-tagline { font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 300; }
+    .nav-links { display: flex; gap: 1rem; }
+    .nav-group { display: flex; gap: 1rem; align-items: center; }
+    .nav-link { color: rgba(255, 255, 255, 0.8); text-decoration: none; padding: 0.7rem 1.5rem; border-radius: 50px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; border: none; background: none; cursor: pointer; font-family: inherit; opacity: 0; animation: fadeInUp 0.8s ease-out 0.4s forwards; }
+    .nav-link::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent); transition: left 0.5s ease; }
+    .nav-link:hover::before { left: 100%; }
+    .nav-link:hover { transform: translateY(-2px); color: #ffffff; text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+    .btn-primary { background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); color: white !important; box-shadow: 0 4px 20px rgba(255, 107, 107, 0.18); }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255, 107, 107, 0.28); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.06); color: white !important; border: 1px solid rgba(255, 255, 255, 0.08); }
+    .main-content { min-height: 100vh; padding: 100px 1rem 2rem; position: relative; max-width: 1200px; margin: 0 auto; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .page-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; text-align: center; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-subtitle { font-size: 1.1rem; color: rgba(255,255,255,0.7); text-align:center; margin-bottom: 2rem; }
+    .checkout-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .checkout-form { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 2rem; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.9); font-weight: 500; }
+    .form-input, .form-textarea { width: 100%; padding: 1rem 1.25rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; color: #fff; font-size: 1rem; font-family: inherit; }
+    .form-textarea { min-height: 120px; resize: vertical; }
+    .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent-b); background: rgba(255,255,255,0.05); }
+    .order-summary-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 2rem; position: sticky; top: 120px; }
+    .summary-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--accent-b); }
+    .summary-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .summary-item:last-child { border-bottom: none; font-size: 1.3rem; font-weight: 700; color: var(--accent-b); margin-top: 1rem; }
+    .payment-info { background: rgba(78, 205, 196, 0.1); border: 1px solid rgba(78, 205, 196, 0.2); border-radius: 8px; padding: 1rem; margin-top: 1.5rem; }
+    .payment-info-title { font-weight: 600; color: var(--accent-b); margin-bottom: 0.5rem; }
+    .payment-info-text { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+    .place-order-btn { width: 100%; padding: 1rem 2rem; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); border: none; border-radius: 12px; color: #fff; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; }
+    .place-order-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 107, 107, 0.3); }
+    .place-order-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-0); z-index: 9999; display:flex; justify-content:center; align-items:center; }
+    .loader { width:50px; height:50px; border:3px solid rgba(255,255,255,0.08); border-top:3px solid var(--accent-a); border-radius:50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; z-index: 1001; }
+    .hamburger span { display: block; width: 25px; height: 2px; background: #fff; margin: 5px 0; transition: 0.3s; }
+    .cart-badge { position: relative; }
+    .cart-badge-count { position: absolute; top: -8px; right: -8px; background: var(--accent-a); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+    
+    @media (max-width:968px) {
+      .checkout-container { grid-template-columns: 1fr; }
+      .order-summary-card { position: static; }
+    }
+    
+    @media (max-width:768px) {
+      .hamburger { display: block; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); }
+      .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+      .hamburger.active span:nth-child(2) { opacity: 0; }
+      .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+      .nav-links { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 5rem 2rem 2rem; gap: 0.5rem; transition: right 0.3s ease; border-left: 1px solid rgba(255,255,255,0.1); }
+      .nav-links.active { right: 0; }
+      .nav-link { width: 100%; text-align: left; padding: 1rem; border-radius: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+    <div class="loader"></div>
+  </div>
+
+  <div class="bg-gradient"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
+  <div class="cursor-trail" id="cursorTrail"></div>
+  <div class="cursor-trail-2" id="cursorTrail2"></div>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <a href="index.html" class="brand-logo">Book Store</a>
+        <div class="brand-tagline">E-Commerce Platform</div>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <div class="nav-group">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="books.html" class="nav-link">Books</a>
+          <a href="cart.html" class="nav-link cart-badge">
+            Cart
+            <span class="cart-badge-count" id="cartBadge" style="display:none;">0</span>
+          </a>
+          <a href="orders.html" class="nav-link">Orders</a>
+          <a href="profile.html" class="nav-link">Profile</a>
+          <button class="nav-link auth-only" id="btnLogout" style="display:none;">Logout</button>
+          <a href="login.html" class="nav-link guest-only">Login</a>
+          <a href="register.html" class="nav-link guest-only btn-primary">Register</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <h1 class="page-title">Checkout</h1>
+    <p class="page-subtitle">Complete your order</p>
+
+    <div class="checkout-container">
+      <div class="checkout-form">
+        <h2 style="margin-bottom: 1.5rem; color: var(--accent-b);">Shipping Information</h2>
+        <form id="checkoutForm">
+          <div class="form-group">
+            <label class="form-label">Shipping Address *</label>
+            <textarea name="shipping_address" class="form-textarea" placeholder="Enter your complete shipping address" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Number *</label>
+            <input type="text" name="contact_number" class="form-input" placeholder="e.g. +1234567890" required>
+          </div>
+          <div class="payment-info">
+            <div class="payment-info-title">💳 Payment Method</div>
+            <div class="payment-info-text">Cash on Delivery - Pay when you receive your order</div>
+          </div>
+        </form>
+      </div>
+
+      <div class="order-summary-card">
+        <h3 class="summary-title">Order Summary</h3>
+        <div id="orderItems"></div>
+        <div class="summary-item">
+          <span>Total</span>
+          <span id="orderTotal">$0.00</span>
+        </div>
+        <button class="place-order-btn" id="placeOrderBtn">Place Order</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="js/error-handler.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Mobile menu toggle
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+      });
+    }
+
+    let cartItems = [];
+    let cartTotal = 0;
+
+    async function loadCart() {
+      try {
+        const response = await api('/cart');
+        cartItems = response.items || [];
+        cartTotal = parseFloat(response.total || 0);
+
+        if (cartItems.length === 0) {
+          if (window.Swal && typeof Swal.fire === 'function') {
+            Swal.fire({ icon: 'warning', title: 'Empty Cart', text: 'Your cart is empty. Redirecting to books...' });
+          }
+          setTimeout(() => location.href = 'books.html', 2000);
+          return;
+        }
+
+        renderOrderSummary();
+      } catch (err) {
+        console.error('Failed to load cart:', err);
+        if (err.message && err.message.includes('Unauthorized')) {
+          location.href = 'login.html';
+        }
+      }
+    }
+
+    function renderOrderSummary() {
+      const container = document.getElementById('orderItems');
+      const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
+      
+      container.innerHTML = cartItems.map(item => {
+        const book = item.book || {};
+        const subtotal = (item.quantity * (book.price || 0)).toFixed(2);
+        
+        return `
+          <div class="summary-item">
+            <span>${book.name || 'Unknown'} × ${item.quantity}</span>
+            <span>$${subtotal}</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('orderTotal').textContent = `$${cartTotal.toFixed(2)}`;
+    }
+
+    document.getElementById('placeOrderBtn').addEventListener('click', async () => {
+      const form = document.getElementById('checkoutForm');
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      if (!data.shipping_address || !data.contact_number) {
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'warning', title: 'Missing Information', text: 'Please fill in all required fields' });
+        } else {
+          alert('Please fill in all required fields');
+        }
+        return;
+      }
+
+      if (cartItems.length === 0) {
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'warning', title: 'Empty Cart', text: 'Your cart is empty' });
+        }
+        return;
+      }
+
+      const confirmed = window.Swal && typeof Swal.fire === 'function' 
+        ? (await Swal.fire({ 
+            icon: 'question', 
+            title: 'Place Order', 
+            html: `Total: <strong>$${cartTotal.toFixed(2)}</strong><br>Payment: Cash on Delivery<br><br>Confirm order?`,
+            showCancelButton: true 
+          })).isConfirmed
+        : confirm(`Place order for $${cartTotal.toFixed(2)}?`);
+
+      if (!confirmed) return;
+
+      try {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('placeOrderBtn').disabled = true;
+
+        const order = await api('/orders', { method: 'POST', data });
+
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ 
+            icon: 'success', 
+            title: 'Order Placed!', 
+            html: `Order Number: <strong>${order.order.order_number}</strong><br>Total: <strong>$${order.order.total_amount}</strong><br><br>You will pay when you receive your order.`,
+            confirmButtonText: 'View Orders'
+          }).then(() => {
+            location.href = 'orders.html';
+          });
+        } else {
+          alert(`Order placed successfully! Order #${order.order.order_number}`);
+          location.href = 'orders.html';
+        }
+      } catch (err) {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('placeOrderBtn').disabled = false;
+        
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Order Failed', text: message });
+        } else {
+          alert('Failed to place order: ' + message);
+        }
+      }
+    });
+
+    // Initialize
+    if (typeof requireAuth === 'function') {
+      requireAuth().then(() => {
+        loadCart();
+        updateCartBadge();
+      });
+    } else {
+      loadCart();
+      updateCartBadge();
+    }
+  </script>
+</body>
+</html>
+

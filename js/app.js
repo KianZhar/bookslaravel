@@ -399,12 +399,18 @@ function renderRow(row) {
   const imgUrl = baseImgUrl + separator + 'id=' + row.id + '&v=' + timestamp;
   const defaultImg = uploadsUrl + 'default.png';
   
+  const price = parseFloat(row.price || 0).toFixed(2);
+  const stock = row.stock_quantity || 0;
+  const isInStock = stock > 0;
+  
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td data-label="ID"><span class="cell-value">${row.id}</span></td>
     <td data-label="ISBN"><span class="cell-value">${row.ISBN}</span></td>
     <td data-label="Name"><span class="cell-value">${row.name}</span></td>
     <td data-label="Description"><span class="cell-value">${row.description}</span></td>
+    <td data-label="Price"><span class="cell-value">$${price}</span></td>
+    <td data-label="Stock"><span class="cell-value" style="color: ${isInStock ? '#4ecdc4' : '#ff6b6b'}">${stock}</span></td>
     <td data-label="Image">
       <img src="${imgUrl}" alt="book image" width="32" height="32" class="book-image"
            onerror="if(!this.dataset.retry) { this.dataset.retry='1'; console.warn('Image load error for book ${row.id}, retrying:', this.src); setTimeout(() => { const baseUrl = this.src.split('?')[0]; this.src = baseUrl + '?retry=' + Date.now(); }, 1000); } else { console.error('Image failed after retry for book ${row.id}:', this.src); this.onerror=null; if(this.src !== '${defaultImg}') this.src='${defaultImg}'; }"
@@ -412,8 +418,9 @@ function renderRow(row) {
            onload="this.dataset.loaded='true'; console.log('Book ${row.id} image loaded:', this.src);">
     </td>
     <td data-label="Actions">
-  <button class="action-btn btn-edit" data-action="edit" data-id="${row.id}">Edit</button>
-  <button class="action-btn btn-delete" data-action="delete" data-id="${row.id}">Delete</button>
+      ${isInStock ? `<button class="action-btn btn-add-cart" data-action="add-cart" data-id="${row.id}" style="background: linear-gradient(90deg, rgba(78,205,196,0.95), rgba(69,183,209,0.95)); margin-right: 0.35rem;">Add to Cart</button>` : '<span style="color: rgba(255,255,255,0.5);">Out of Stock</span>'}
+      <button class="action-btn btn-edit" data-action="edit" data-id="${row.id}">Edit</button>
+      <button class="action-btn btn-delete" data-action="delete" data-id="${row.id}">Delete</button>
     </td>
   `;
   tblBody.appendChild(tr);
@@ -421,7 +428,8 @@ function renderRow(row) {
 
 async function loadBooks(q = '') {
   try {
-    const rows = await api('/books' + (q ? `?q=${encodeURIComponent(q)}` : ''));
+    const response = await api('/books' + (q ? `?q=${encodeURIComponent(q)}` : ''));
+    const rows = response.books || response || [];
     if (tblBody) {
       tblBody.innerHTML = '';
       rows.forEach(renderRow);
@@ -462,6 +470,27 @@ if (addForm && tblBody) {
     const btn = e.target.closest('button');
     if (!btn) return;
     const id = btn.dataset.id;
+
+    if (btn.dataset.action === 'add-cart') {
+      try {
+        await api('/cart', { method: 'POST', data: { book_id: parseInt(id), quantity: 1 } });
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'success', title: 'Added to Cart', text: 'Book added to cart successfully!', timer: 1500, showConfirmButton: false });
+        } else if (msg) {
+          msg.textContent = 'Book added to cart!';
+          setTimeout(() => msg.textContent = '', 3000);
+        }
+        updateCartBadge();
+      } catch (err) {
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Failed to Add', text: message });
+        } else if (msg) {
+          msg.textContent = message;
+        }
+      }
+      return;
+    }
 
     if (btn.dataset.action === 'edit') {
       location.href = `edit.html?id=${encodeURIComponent(id)}`;
@@ -518,6 +547,8 @@ async function initEdit() {
   const isbnInput = document.getElementById('ISBN');
   const nameInput = document.getElementById('name');
   const descInput = document.getElementById('description');
+  const priceInput = document.getElementById('price');
+  const stockInput = document.getElementById('stock_quantity');
   const preview = document.getElementById('preview');
 
   try {
@@ -527,6 +558,8 @@ async function initEdit() {
     isbnInput.value = book.ISBN;
     nameInput.value = book.name;
     descInput.value = book.description;
+    if (priceInput) priceInput.value = book.price || 0;
+    if (stockInput) stockInput.value = book.stock_quantity || 0;
 
     // Construct image URL properly
     const baseUrl = window.CONFIG ? window.CONFIG.BASE_URL : 'http://localhost:8000/';
@@ -617,6 +650,8 @@ async function initEdit() {
         name: nameInput.value,
         description: descInput.value
       };
+      if (priceInput) data.price = parseFloat(priceInput.value);
+      if (stockInput) data.stock_quantity = parseInt(stockInput.value);
       endpoint = `/books/${id}`;
       method = 'PUT';
     }
@@ -652,6 +687,36 @@ async function initEdit() {
   });
 }
 
+// ===================
+// Cart Badge Update
+// ===================
+async function updateCartBadge() {
+  try {
+    if (!isAuthed()) return;
+    const response = await api('/cart');
+    const itemCount = (response.items || []).length;
+    const badge = document.getElementById('cartBadge');
+    if (badge) {
+      if (itemCount > 0) {
+        badge.textContent = itemCount;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  } catch (e) {
+    // Ignore errors (user might not be logged in)
+  }
+}
+
+// Update cart badge on page load
+if (typeof requireAuth === 'function') {
+  requireAuth().then(() => updateCartBadge());
+} else {
+  updateCartBadge();
+}
+
 window.requireAuth = requireAuth;
 window.loadProfile = loadProfile;
 window.initEdit = initEdit;
+window.updateCartBadge = updateCartBadge;

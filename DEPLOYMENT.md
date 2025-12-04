@@ -12,11 +12,11 @@
 
 2. **Create GitHub Repository**
    - Go to GitHub and create a new repository
-   - Name it something like `bookstore-frontend`
+   - Name it `bookslaravel` (to match your GitHub Pages URL)
 
 3. **Push to GitHub**
    ```bash
-   git remote add origin https://github.com/yourusername/bookstore-frontend.git
+   git remote add origin https://github.com/kianzhar/bookslaravel.git
    git branch -M main
    git push -u origin main
    ```
@@ -27,17 +27,11 @@
    - Scroll down to **Pages** section
    - Under **Source**, select **main** branch and **/ (root)** folder
    - Click **Save**
-   - Your site will be available at: `https://yourusername.github.io/bookstore-frontend`
+   - Your site will be available at: `https://kianzhar.github.io/bookslaravel/`
 
-5. **Update Backend CORS**
-   - Edit `config/cors.php` in your Laravel backend
-   - Add your GitHub Pages URL to allowed origins:
-   ```php
-   'allowed_origins' => [
-       'http://localhost:3000',
-       'https://yourusername.github.io',
-   ],
-   ```
+5. **Backend CORS Already Updated**
+   - The backend CORS configuration has been updated to allow `https://kianzhar.github.io`
+   - No additional changes needed
 
 6. **Update Frontend Config** (if needed)
    - If your backend is not on localhost, update `config.js` with your backend URL
