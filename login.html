@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'self' data: gap: 'unsafe-inline' 'unsafe-eval'; style-src * 'self' 'unsafe-inline'; media-src *; img-src * 'self' data:; connect-src * 'self';" />
+  <title>Login - Book Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/mobile-responsive.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Cursor Following Background */
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+      overflow: hidden;
+    }
+
+    .cursor-glow {
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      background: radial-gradient(circle, 
+        rgba(255, 107, 107, 0.15) 0%, 
+        rgba(78, 205, 196, 0.1) 25%, 
+        rgba(69, 183, 209, 0.08) 50%, 
+        transparent 70%);
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+      transform: translate(-50%, -50%);
+      filter: blur(2px);
+    }
+
+    .cursor-trail {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, 
+        rgba(255, 107, 107, 0.08) 0%, 
+        rgba(150, 206, 180, 0.06) 40%, 
+        transparent 70%);
+      pointer-events: none;
+      transition: all 0.8s cubic-bezier(0.23, 1, 0.320, 1);
+      transform: translate(-50%, -50%);
+      filter: blur(4px);
+    }
+
+    .cursor-trail-2 {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, 
+        rgba(78, 205, 196, 0.12) 0%, 
+        rgba(255, 107, 107, 0.08) 50%, 
+        transparent 70%);
+      pointer-events: none;
+      transition: all 1.2s cubic-bezier(0.23, 1, 0.320, 1);
+      transform: translate(-50%, -50%);
+      filter: blur(1px);
+    }
+
+    .bg-gradient::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.1) 0%, transparent 30%),
+        radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.08) 0%, transparent 30%),
+        radial-gradient(circle at 50% 10%, rgba(120, 219, 255, 0.06) 0%, transparent 40%);
+      animation: ambientGlow 10s ease-in-out infinite;
+    }
+
+    @keyframes ambientGlow {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.8; }
+    }
+
+    /* Back Button */
+    .back-btn {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 1001;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(255, 107, 107, 0.2);
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .back-btn:hover {
+      background: linear-gradient(45deg, #4ecdc4, #ff6b6b);
+      transform: translateY(-2px) scale(1.04);
+    }
+
+    /* Main Content */
+    .main-content {
+      min-height: 100vh;
+      padding-top: 80px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    /* Page title */
+    .page-title {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-align: center;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientText 4s ease-in-out infinite;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.6s forwards, gradientText 4s ease-in-out infinite;
+    }
+
+    @keyframes gradientText {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .page-subtitle {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-align: center;
+      margin-bottom: 3rem;
+      line-height: 1.6;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.8s forwards;
+    }
+
+    /* Form styles */
+    .login-form {
+      width: 100%;
+      max-width: 450px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 3rem;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      animation: slideInCard 0.8s ease-out 1s forwards;
+    }
+
+    @keyframes slideInCard {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-form::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, rgba(255, 107, 107, 0.05), rgba(78, 205, 196, 0.05));
+      opacity: 1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .form-label {
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.95rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 0.75rem;
+      color: #ffffff;
+      font-size: 1rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #4ecdc4;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .form-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      padding: 1rem 2rem;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      color: #ffffff;
+      border: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-top: 1rem;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .submit-btn:hover::before {
+      left: 100%;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+    }
+
+    .submit-btn:active {
+      transform: translateY(-1px) scale(1.01);
+    }
+
+    /* Message display */
+    .message-display {
+      margin-top: 2rem;
+      padding: 1rem 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-family: 'Inter', monospace;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      max-width: 450px;
+      backdrop-filter: blur(20px);
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message-display:empty {
+      display: none;
+    }
+
+    /* Login footer */
+    .login-footer {
+      margin-top: 2rem;
+      text-align: center;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out 1.2s forwards;
+    }
+
+    .login-footer a {
+      color: #4ecdc4;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .login-footer a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      transition: width 0.3s ease;
+    }
+
+    .login-footer a:hover::after {
+      width: 100%;
+    }
+
+    .login-footer a:hover {
+      color: #ff6b6b;
+      transform: translateY(-1px);
+    }
+
+    .login-footer p {
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      body { font-size: 14px; }
+      .page-title {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+      }
+      .page-subtitle {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+      }
+      .main-content {
+        padding: 1.5rem 1rem;
+        padding-top: 100px;
+      }
+      .login-form {
+        padding: 2rem 1.5rem;
+        gap: 1.25rem;
+      }
+      .form-input {
+        padding: 0.9rem 1rem;
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+      .submit-btn {
+        padding: 0.95rem 1.5rem;
+        font-size: 1rem;
+      }
+      .back-btn {
+        top: 12px;
+        left: 12px;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+      }
+      .login-footer {
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+      }
+      .message-display {
+        font-size: 0.85rem;
+        padding: 0.9rem 1.25rem;
+        margin-top: 1.5rem;
+      }
+      
+      /* Disable cursor effects on mobile for performance */
+      .cursor-glow, .cursor-trail, .cursor-trail-2 { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .page-title {
+        font-size: 2rem;
+      }
+      .page-subtitle {
+        font-size: 0.95rem;
+      }
+      .form-input {
+        padding: 0.85rem 1rem;
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+      .login-form {
+        padding: 1.75rem 1.25rem;
+        gap: 1rem;
+      }
+      .back-btn {
+        top: 8px;
+        left: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+      }
+    }
+
+    /* Loading Animation */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0a0a0a;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fadeOut 0.5s ease-out 2s forwards;
+    }
+
+    .loader {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid #ff6b6b;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(78, 205, 196, 0.5);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(78, 205, 196, 0.8);
+    }
+
+    /* Focus states for accessibility */
+    .form-input:focus,
+    .submit-btn:focus,
+    .back-btn:focus {
+      outline: 2px solid #4ecdc4;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay">
+    <div class="loader"></div>
+  </div>
+  
+  <div class="bg-gradient">
+    <div class="cursor-glow"></div>
+    <div class="cursor-trail"></div>
+    <div class="cursor-trail-2"></div>
+  </div>
+  
+  <button onclick="window.location.href='index.html'" class="back-btn" aria-label="Go to home">← Back</button>
+
+  <main class="main-content">
+    <h1 class="page-title">Welcome Back</h1>
+    <p class="page-subtitle">Sign in to manage your premium book collection</p>
+    
+    <form id="loginForm" class="login-form">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input name="username" class="form-input" placeholder="Enter your username" required>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-input" placeholder="Enter your password" required>
+      </div>
+      
+      <button type="submit" class="submit-btn">Login</button>
+    </form>
+    
+    <div class="login-footer">
+      <p>Don't have an account?</p>
+      <a href="register.html">Create Account</a>
+      <p style="margin: 1rem 0 0.5rem 0;">Forgot your password?</p>
+      <a href="forgot-password.html">Reset Password</a>
+    </div>
+    
+    <pre id="loginMsg" class="message-display"></pre>
+  </main>
+
+  <script>
+    // Cursor Following Background Effect
+    document.addEventListener('DOMContentLoaded', function() {
+      const cursorGlow = document.querySelector('.cursor-glow');
+      const cursorTrail = document.querySelector('.cursor-trail');
+      const cursorTrail2 = document.querySelector('.cursor-trail-2');
+      
+      let mouseX = 0;
+      let mouseY = 0;
+      let glowX = 0;
+      let glowY = 0;
+      let trailX = 0;
+      let trailY = 0;
+      let trail2X = 0;
+      let trail2Y = 0;
+
+      document.addEventListener('mousemove', function(e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+
+      function animateCursor() {
+        glowX += (mouseX - glowX) * 0.1;
+        glowY += (mouseY - glowY) * 0.1;
+        trailX += (mouseX - trailX) * 0.05;
+        trailY += (mouseY - trailY) * 0.05;
+        trail2X += (mouseX - trail2X) * 0.02;
+        trail2Y += (mouseY - trail2Y) * 0.02;
+
+        cursorGlow.style.left = glowX + 'px';
+        cursorGlow.style.top = glowY + 'px';
+        cursorTrail.style.left = trailX + 'px';
+        cursorTrail.style.top = trailY + 'px';
+        cursorTrail2.style.left = trail2X + 'px';
+        cursorTrail2.style.top = trail2Y + 'px';
+
+        requestAnimationFrame(animateCursor);
+      }
+      animateCursor();
+
+      // Enhanced hover effects for interactive elements
+      const interactiveElements = document.querySelectorAll('.submit-btn, .login-form, .form-input, .back-btn');
+      interactiveElements.forEach(element => {
+        element.addEventListener('mouseenter', function() {
+          cursorGlow.style.transform = 'translate(-50%, -50%) scale(1.5)';
+          cursorGlow.style.background = `radial-gradient(circle, 
+            rgba(255, 107, 107, 0.25) 0%, 
+            rgba(78, 205, 196, 0.2) 25%, 
+            rgba(69, 183, 209, 0.15) 50%, 
+            transparent 70%)`;
+        });
+        element.addEventListener('mouseleave', function() {
+          cursorGlow.style.transform = 'translate(-50%, -50%) scale(1)';
+          cursorGlow.style.background = `radial-gradient(circle, 
+            rgba(255, 107, 107, 0.15) 0%, 
+            rgba(78, 205, 196, 0.1) 25%, 
+            rgba(69, 183, 209, 0.08) 50%, 
+            transparent 70%)`;
+        });
+      });
+    });
+
+    // Add some interactive particles on mouse move
+    document.addEventListener('mousemove', function(e) {
+      createParticle(e.clientX, e.clientY);
+    });
+
+    function createParticle(x, y) {
+      const particle = document.createElement('div');
+      particle.style.position = 'fixed';
+      particle.style.left = x + 'px';
+      particle.style.top = y + 'px';
+      particle.style.width = '4px';
+      particle.style.height = '4px';
+      particle.style.background = 'rgba(255, 255, 255, 0.6)';
+      particle.style.borderRadius = '50%';
+      particle.style.pointerEvents = 'none';
+      particle.style.zIndex = '1000';
+      particle.style.animation = 'particleFade 1s ease-out forwards';
+      document.body.appendChild(particle);
+      setTimeout(() => {
+        particle.remove();
+      }, 1000);
+    }
+
+    // Add particle fade animation dynamically
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes particleFade {
+        0% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(0) translateY(-50px);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+  <!-- Configuration must load first -->
+  <script src="config.js"></script>
+  <!-- Error handler before other scripts -->
+  <script src="error-handler.js"></script>
+  <!-- Axios for API calls -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
