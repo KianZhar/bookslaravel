@@ -651,8 +651,8 @@
   <script src="config.js"></script>
   <!-- Error handler before other scripts -->
   <script src="error-handler.js"></script>
-  <!-- Axios for API calls -->
-  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+  <!-- jQuery for API calls -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script>
     // Get email from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
@@ -703,13 +703,18 @@
         return;
       }
 
-      try {
-        const result = await axios.post('http://localhost:8000/api/auth/verify-email', {
+      $.ajax({
+        method: 'POST',
+        url: 'http://localhost:8000/api/auth/verify-email',
+        contentType: 'application/json',
+        data: JSON.stringify({
           email: userEmail,
           otp_code: otpCode
-        });
-
-        verifyMsg.textContent = result.data.message + '\n\nRedirecting to login page...';
+        }),
+        dataType: 'json'
+      })
+      .done(function(result) {
+        verifyMsg.textContent = result.message + '\n\nRedirecting to login page...';
         verifyMsg.style.color = '#10b981';
 
         // Clear any stored email
@@ -719,15 +724,13 @@
         setTimeout(() => {
           window.location.href = 'login.html';
         }, 3000);
-      } catch (error) {
-        console.error('Verification error:', error);
-        if (error.response && error.response.data) {
-          verifyMsg.textContent = error.response.data.message || 'Verification failed';
-        } else {
-          verifyMsg.textContent = 'Network error. Please try again.';
-        }
+      })
+      .fail(function(xhr) {
+        console.error('Verification error:', xhr);
+        const errorData = xhr.responseJSON || {};
+        verifyMsg.textContent = errorData.message || 'Verification failed';
         verifyMsg.style.color = '#ef4444';
-      }
+      });
     });
 
     // Handle resend OTP
@@ -736,23 +739,26 @@
 
       const verifyMsg = document.getElementById('verifyMsg');
 
-      try {
-        const result = await axios.post('http://localhost:8000/api/auth/resend-otp', {
+      $.ajax({
+        method: 'POST',
+        url: 'http://localhost:8000/api/auth/resend-otp',
+        contentType: 'application/json',
+        data: JSON.stringify({
           email: userEmail
-        });
-
-        verifyMsg.textContent = result.data.message;
+        }),
+        dataType: 'json'
+      })
+      .done(function(result) {
+        verifyMsg.textContent = result.message;
         verifyMsg.style.color = '#10b981';
         startCountdown(60); // Start 60 second countdown
-      } catch (error) {
-        console.error('Resend OTP error:', error);
-        if (error.response && error.response.data) {
-          verifyMsg.textContent = error.response.data.message || 'Failed to resend code';
-        } else {
-          verifyMsg.textContent = 'Network error. Please try again.';
-        }
+      })
+      .fail(function(xhr) {
+        console.error('Resend OTP error:', xhr);
+        const errorData = xhr.responseJSON || {};
+        verifyMsg.textContent = errorData.message || 'Failed to resend code';
         verifyMsg.style.color = '#ef4444';
-      }
+      });
     });
 
     // Auto-focus on OTP input

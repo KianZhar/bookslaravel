@@ -66,6 +66,7 @@
     .place-order-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 107, 107, 0.3); }
     .place-order-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-0); z-index: 9999; display:flex; justify-content:center; align-items:center; }
+    .loading-indicator { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; min-height: 200px; }
     .loader { width:50px; height:50px; border:3px solid rgba(255,255,255,0.08); border-top:3px solid var(--accent-a); border-radius:50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; z-index: 1001; }
@@ -112,13 +113,14 @@
       </button>
       <div class="nav-links" id="navLinks">
         <div class="nav-group">
-          <a href="index.html" class="nav-link">Home</a>
+          <a href="index.html" class="nav-link hide-for-admin">Home</a>
           <a href="books.html" class="nav-link">Books</a>
-          <a href="cart.html" class="nav-link cart-badge">
+          <a href="cart.html" class="nav-link cart-badge user-only">
             Cart
             <span class="cart-badge-count" id="cartBadge" style="display:none;">0</span>
           </a>
           <a href="orders.html" class="nav-link">Orders</a>
+          <a href="users.html" class="nav-link admin-only" style="display:none;">Users</a>
           <a href="profile.html" class="nav-link">Profile</a>
           <button class="nav-link auth-only" id="btnLogout" style="display:none;">Logout</button>
           <a href="login.html" class="nav-link guest-only">Login</a>
@@ -153,10 +155,14 @@
 
       <div class="order-summary-card">
         <h3 class="summary-title">Order Summary</h3>
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+          <div class="loader"></div>
+          <p style="margin-top: 1rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">Loading order...</p>
+        </div>
         <div id="orderItems"></div>
         <div class="summary-item">
           <span>Total</span>
-          <span id="orderTotal">$0.00</span>
+          <span id="orderTotal">₱0.00</span>
         </div>
         <button class="place-order-btn" id="placeOrderBtn">Place Order</button>
       </div>
@@ -164,9 +170,9 @@
   </div>
 
   <script src="config.js"></script>
-  <script src="js/error-handler.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
-  <script src="js/app.js"></script>
+  <script src="error-handler.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="app.js"></script>
   <script>
     // Mobile menu toggle
     const hamburger = document.getElementById('hamburger');
@@ -182,6 +188,13 @@
     let cartTotal = 0;
 
     async function loadCart() {
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      const orderItems = document.getElementById('orderItems');
+      
+      // Show loading indicator BEFORE starting fetch
+      if (loadingIndicator) loadingIndicator.style.display = 'flex';
+      if (orderItems) orderItems.style.display = 'none';
+      
       try {
         const response = await api('/cart');
         cartItems = response.items || [];
@@ -201,6 +214,10 @@
         if (err.message && err.message.includes('Unauthorized')) {
           location.href = 'login.html';
         }
+      } finally {
+        // Hide loading indicator and show order items
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        if (orderItems) orderItems.style.display = 'block';
       }
     }
 
@@ -210,23 +227,27 @@
       
       container.innerHTML = cartItems.map(item => {
         const book = item.book || {};
-        const subtotal = (item.quantity * (book.price || 0)).toFixed(2);
+        const bookPrice = parseFloat(book.price || 0) || 0;
+        const subtotal = (item.quantity * bookPrice).toFixed(2);
         
         return `
           <div class="summary-item">
             <span>${book.name || 'Unknown'} × ${item.quantity}</span>
-            <span>$${subtotal}</span>
+            <span>₱${subtotal}</span>
           </div>
         `;
       }).join('');
 
-      document.getElementById('orderTotal').textContent = `$${cartTotal.toFixed(2)}`;
+      document.getElementById('orderTotal').textContent = `₱${cartTotal.toFixed(2)}`;
     }
 
     document.getElementById('placeOrderBtn').addEventListener('click', async () => {
       const form = document.getElementById('checkoutForm');
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
+      
+      // Always use cash on delivery
+      data.payment_method = 'cash_on_delivery';
 
       if (!data.shipping_address || !data.contact_number) {
         if (window.Swal && typeof Swal.fire === 'function') {
@@ -248,10 +269,10 @@
         ? (await Swal.fire({ 
             icon: 'question', 
             title: 'Place Order', 
-            html: `Total: <strong>$${cartTotal.toFixed(2)}</strong><br>Payment: Cash on Delivery<br><br>Confirm order?`,
+            html: `Total: <strong>₱${cartTotal.toFixed(2)}</strong><br>Payment: Cash on Delivery<br><br>Confirm order?`,
             showCancelButton: true 
           })).isConfirmed
-        : confirm(`Place order for $${cartTotal.toFixed(2)}?`);
+        : confirm(`Place order for ₱${cartTotal.toFixed(2)}?`);
 
       if (!confirmed) return;
 
@@ -265,7 +286,7 @@
           Swal.fire({ 
             icon: 'success', 
             title: 'Order Placed!', 
-            html: `Order Number: <strong>${order.order.order_number}</strong><br>Total: <strong>$${order.order.total_amount}</strong><br><br>You will pay when you receive your order.`,
+            html: `Order Number: <strong>${order.order.order_number}</strong><br>Total: <strong>₱${order.order.total_amount}</strong><br><br>You will pay when you receive your order.`,
             confirmButtonText: 'View Orders'
           }).then(() => {
             location.href = 'orders.html';
@@ -287,17 +308,34 @@
       }
     });
 
+    // Load user information to populate contact number
+    async function loadUserInfo() {
+      try {
+        const user = await api('/users/me');
+        const contactNumberInput = document.querySelector('input[name="contact_number"]');
+        if (contactNumberInput && user.contact_number) {
+          contactNumberInput.value = user.contact_number;
+        }
+      } catch (err) {
+        console.error('Failed to load user info:', err);
+        // Silently fail - user can still enter contact number manually
+      }
+    }
+
     // Initialize
     if (typeof requireAuth === 'function') {
       requireAuth().then(() => {
         loadCart();
-        updateCartBadge();
+        loadUserInfo();
+        if (typeof updateCartBadge === 'function') updateCartBadge();
       });
     } else {
       loadCart();
-      updateCartBadge();
+      loadUserInfo();
+      if (typeof updateCartBadge === 'function') updateCartBadge();
     }
   </script>
 </body>
 </html>
+
 
