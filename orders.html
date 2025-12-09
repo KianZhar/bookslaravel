@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'self' data: gap: 'unsafe-inline' 'unsafe-eval'; style-src * 'self' 'unsafe-inline'; media-src *; img-src * 'self' data:; connect-src * 'self';" />
+  <title>Orders - Book Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/mobile-responsive.css">
+  <style>
+    :root {
+      --bg-0: #0a0a0a;
+      --bg-1: #1a1a2e;
+      --bg-2: #16213e;
+      --accent-a: #ff6b6b;
+      --accent-b: #4ecdc4;
+      --accent-c: #45b7d1;
+      --glow-1: rgba(255,107,107,0.15);
+      --glow-2: rgba(78,205,196,0.10);
+      --glow-3: rgba(69,183,209,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-0); color: #ffffff; overflow-x: hidden; position: relative; }
+    .bg-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(135deg, var(--bg-0) 0%, var(--bg-1) 50%, var(--bg-2) 100%); overflow: hidden; }
+    .cursor-glow { position: absolute; width: 800px; height: 800px; border-radius: 50%; background: radial-gradient(circle, var(--glow-1) 0%, var(--glow-2) 25%, var(--glow-3) 50%, transparent 70%); pointer-events: none; transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1); transform: translate(-50%, -50%); filter: blur(2px); }
+    .cursor-trail { position: absolute; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(255,107,107,0.08) 0%, rgba(150,206,180,0.06) 40%, transparent 70%); pointer-events: none; transition: all 0.8s cubic-bezier(0.23, 1, 0.320, 1); transform: translate(-50%, -50%); filter: blur(4px); }
+    .cursor-trail-2 { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, var(--glow-2) 0%, var(--glow-1) 50%, transparent 70%); pointer-events: none; transition: all 1.2s cubic-bezier(0.23, 1, 0.320, 1); transform: translate(-50%, -50%); filter: blur(1px); }
+    .bg-gradient::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.06) 0%, transparent 30%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.05) 0%, transparent 30%), radial-gradient(circle at 50% 10%, rgba(120, 219, 255, 0.04) 0%, transparent 40%); animation: ambientGlow 10s ease-in-out infinite; }
+    @keyframes ambientGlow { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.8; } }
+    .navbar { position: fixed; top: 0; width: 100%; z-index: 1000; backdrop-filter: blur(20px); background: rgba(0, 0, 0, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.06); animation: slideDown 0.8s ease-out; }
+    @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .nav-container { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: center; align-items: center; gap: 2rem; }
+    .nav-brand { opacity: 0; animation: fadeInUp 0.8s ease-out 0.2s forwards; text-align: center; }
+    .brand-logo { font-size: 1.8rem; font-weight: 700; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 3s ease-in-out infinite; }
+    @keyframes shimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .brand-tagline { font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 300; }
+    .nav-links { display: flex; gap: 1rem; }
+    .nav-group { display: flex; gap: 1rem; align-items: center; }
+    .nav-link { color: rgba(255, 255, 255, 0.8); text-decoration: none; padding: 0.7rem 1.5rem; border-radius: 50px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; border: none; background: none; cursor: pointer; font-family: inherit; opacity: 0; animation: fadeInUp 0.8s ease-out 0.4s forwards; }
+    .nav-link::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent); transition: left 0.5s ease; }
+    .nav-link:hover::before { left: 100%; }
+    .nav-link:hover { transform: translateY(-2px); color: #ffffff; text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+    .btn-primary { background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); color: white !important; box-shadow: 0 4px 20px rgba(255, 107, 107, 0.18); }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255, 107, 107, 0.28); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.06); color: white !important; border: 1px solid rgba(255, 255, 255, 0.08); }
+    .main-content { min-height: 100vh; padding: 100px 1rem 2rem; position: relative; max-width: 1200px; margin: 0 auto; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .page-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; text-align: center; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-subtitle { font-size: 1.1rem; color: rgba(255,255,255,0.7); text-align:center; margin-bottom: 2rem; }
+    .order-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+    .order-number { font-size: 1.2rem; font-weight: 600; color: var(--accent-b); }
+    .order-date { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+    .order-status { padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
+    .status-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+    .status-confirmed { background: rgba(0, 123, 255, 0.2); color: #007bff; }
+    .status-shipped { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; }
+    .status-received { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+    .status-canceled { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+    .order-items { margin: 1rem 0; }
+    .order-item { display: flex; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 0.5rem; align-items: center; }
+    .order-item-image { width: 60px; height: 60px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.06); }
+    .order-item-details { flex: 1; }
+    .order-item-name { font-weight: 600; margin-bottom: 0.25rem; }
+    .order-item-info { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
+    .order-summary { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); }
+    .order-total { font-size: 1.3rem; font-weight: 700; color: var(--accent-b); }
+    .order-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .action-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+    .btn-cancel { background: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.3); }
+    .btn-cancel:hover { background: rgba(220, 53, 69, 0.3); }
+    .btn-view { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; border: 1px solid rgba(78, 205, 196, 0.3); }
+    .btn-view:hover { background: rgba(78, 205, 196, 0.3); }
+    .empty-orders { text-align: center; padding: 4rem 2rem; color: rgba(255,255,255,0.6); }
+    .empty-orders-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-0); z-index: 9999; display:flex; justify-content:center; align-items:center; }
+    .loading-indicator { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; min-height: 200px; }
+    .loader { width:50px; height:50px; border:3px solid rgba(255,255,255,0.08); border-top:3px solid var(--accent-a); border-radius:50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .sort-controls { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+    .sort-group { display: flex; gap: 0.5rem; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); }
+    .sort-label { color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-right: 0.5rem; }
+    .sort-select { background: rgba(255,255,255,0.95); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0.5rem 1rem; color: #000; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; }
+    .sort-select:hover { background: rgba(255,255,255,1); border-color: rgba(255,255,255,0.12); }
+    .sort-select:focus { outline: none; border-color: var(--accent-b); box-shadow: 0 0 0 2px rgba(78,205,196,0.2); background: rgba(255,255,255,1); }
+    .sort-select option { background: #fff; color: #000; }
+    .sort-order-btn { background: rgba(78,205,196,0.2); border: 1px solid rgba(78,205,196,0.3); border-radius: 6px; padding: 0.5rem 1rem; color: #4ecdc4; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; }
+    .sort-order-btn:hover { background: rgba(78,205,196,0.3); }
+    .sort-order-btn.active { background: rgba(78,205,196,0.4); border-color: var(--accent-b); }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; z-index: 1001; }
+    .hamburger span { display: block; width: 25px; height: 2px; background: #fff; margin: 5px 0; transition: 0.3s; }
+    .cart-badge { position: relative; }
+    .cart-badge-count { position: absolute; top: -8px; right: -8px; background: var(--accent-a); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+    
+    @media (max-width:768px) {
+      .order-header { flex-direction: column; align-items: flex-start; }
+      .order-item { flex-direction: column; text-align: center; }
+      .order-item-image { width: 100px; height: 100px; }
+      .hamburger { display: block; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); }
+      .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+      .hamburger.active span:nth-child(2) { opacity: 0; }
+      .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+      .nav-links { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 5rem 2rem 2rem; gap: 0.5rem; transition: right 0.3s ease; border-left: 1px solid rgba(255,255,255,0.1); }
+      .nav-links.active { right: 0; }
+      .nav-link { width: 100%; text-align: left; padding: 1rem; border-radius: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+    <div class="loader"></div>
+  </div>
+
+  <div class="bg-gradient"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
+  <div class="cursor-trail" id="cursorTrail"></div>
+  <div class="cursor-trail-2" id="cursorTrail2"></div>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <a href="index.html" class="brand-logo">Book Store</a>
+        <div class="brand-tagline">E-Commerce Platform</div>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <div class="nav-group">
+          <a href="index.html" class="nav-link hide-for-admin">Home</a>
+          <a href="books.html" class="nav-link">Books</a>
+          <a href="cart.html" class="nav-link cart-badge user-only" style="display:none;">
+            Cart
+            <span class="cart-badge-count" id="cartBadge" style="display:none;">0</span>
+          </a>
+          <a href="orders.html" class="nav-link active">Orders</a>
+          <a href="users.html" class="nav-link admin-only" style="display:none;">Users</a>
+          <a href="profile.html" class="nav-link">Profile</a>
+          <button class="nav-link auth-only" id="btnLogout" style="display:none;">Logout</button>
+          <a href="login.html" class="nav-link guest-only">Login</a>
+          <a href="register.html" class="nav-link guest-only btn-primary">Register</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <h1 class="page-title" id="pageTitle">My Orders</h1>
+    <p class="page-subtitle" id="pageSubtitle">View your order history</p>
+
+    <!-- Sorting Controls -->
+    <div class="sort-controls">
+      <div class="sort-group">
+        <label class="sort-label">Sort by:</label>
+        <select id="sortBy" class="sort-select">
+          <option value="status" selected>Status</option>
+          <option value="created_at">Date</option>
+          <option value="total_amount">Amount</option>
+          <option value="order_number">Order Number</option>
+          <option value="payment_status">Payment Status</option>
+          <option value="updated_at">Last Updated</option>
+        </select>
+      </div>
+      <div class="sort-group">
+        <button id="sortOrder" class="sort-order-btn" data-order="desc">
+          <span id="sortOrderIcon">↓</span>
+          <span id="sortOrderText">Newest First</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+      <div class="loader"></div>
+      <p style="margin-top: 1rem; color: rgba(255,255,255,0.7);">Loading orders...</p>
+    </div>
+    <div id="ordersContainer" style="display: none;"></div>
+  </div>
+
+  <!-- SweetAlert2 for dialogs -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+  <script src="config.js"></script>
+  <script src="error-handler.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Mobile menu toggle
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+      });
+    }
+
+    let orders = [];
+    // currentUserRole is declared in app.js, so we just update it
+    let localCurrentUserId = null;
+    let currentSortBy = 'status';
+    let currentSortOrder = 'asc';
+
+    async function loadOrders() {
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      const ordersContainer = document.getElementById('ordersContainer');
+      
+      // Show loading indicator BEFORE starting fetch
+      if (loadingIndicator) loadingIndicator.style.display = 'flex';
+      if (ordersContainer) ordersContainer.style.display = 'none';
+      
+      try {
+        // Get current user info to determine role
+        try {
+          const user = await api('/users/me');
+          // Update the global currentUserRole from app.js
+          if (typeof currentUserRole !== 'undefined') {
+            currentUserRole = user.role || 'user';
+          }
+          localCurrentUserId = user.id;
+          
+          // Update page title and subtitle based on role
+          const pageTitle = document.getElementById('pageTitle');
+          const pageSubtitle = document.getElementById('pageSubtitle');
+          if (user.role === 'seller' || user.role === 'admin') {
+            if (pageTitle) pageTitle.textContent = 'Customer Orders';
+            if (pageSubtitle) pageSubtitle.textContent = 'View and manage customer orders';
+          } else {
+            if (pageTitle) pageTitle.textContent = 'My Orders';
+            if (pageSubtitle) pageSubtitle.textContent = 'View your order history';
+          }
+        } catch (e) {
+          console.warn('Could not get user info:', e);
+        }
+        
+        // Build API URL with sort parameters
+        const sortParams = `?sort_by=${currentSortBy}&sort_order=${currentSortOrder}`;
+        const response = await api('/orders' + sortParams);
+        console.log('Orders API response:', response);
+        console.log('Response type:', typeof response);
+        console.log('Is array?', Array.isArray(response));
+        console.log('Response keys:', response ? Object.keys(response) : 'null');
+        
+        // Handle different response structures
+        if (Array.isArray(response)) {
+          orders = response;
+        } else if (response && response.orders) {
+          orders = response.orders;
+        } else if (response && Array.isArray(response.data)) {
+          orders = response.data;
+        } else {
+          orders = [];
+        }
+        
+        console.log('Orders after parsing:', orders);
+        console.log('Orders length:', orders.length);
+        const userRole = (typeof currentUserRole !== 'undefined') ? currentUserRole : 'user';
+        console.log('Current user ID:', localCurrentUserId);
+        console.log('Current user role:', userRole);
+        
+        // Log debug info if available
+        if (response && response.debug) {
+          console.log('Debug info:', response.debug);
+        }
+        
+        if (!orders || orders.length === 0) {
+          document.getElementById('ordersContainer').innerHTML = `
+            <div class="empty-orders">
+              <div class="empty-orders-icon">📦</div>
+              <p>No orders yet</p>
+              <a href="books.html" class="nav-link btn-primary" style="display:inline-block; margin-top:1rem;">Start Shopping</a>
+            </div>
+          `;
+          return;
+        }
+
+        renderOrders();
+      } catch (err) {
+        console.error('Failed to load orders:', err);
+        if (err.message && err.message.includes('Unauthorized')) {
+          location.href = 'login.html';
+        }
+      } finally {
+        // Hide loading indicator and show orders
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        if (ordersContainer) ordersContainer.style.display = 'block';
+      }
+    }
+
+    function getStatusClass(status) {
+      const statusMap = {
+        'pending': 'status-pending',
+        'confirmed': 'status-confirmed',
+        'shipped': 'status-shipped',
+        'received': 'status-received',
+        'canceled': 'status-canceled'
+      };
+      return statusMap[status] || 'status-pending';
+    }
+
+    function renderOrders() {
+      const container = document.getElementById('ordersContainer');
+      const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
+      
+      console.log('Rendering orders:', orders);
+      console.log('Number of orders:', orders.length);
+      
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `
+          <div class="empty-orders">
+            <div class="empty-orders-icon">📦</div>
+            <p>No orders yet</p>
+            <a href="books.html" class="nav-link btn-primary" style="display:inline-block; margin-top:1rem;">Start Shopping</a>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = orders.map(order => {
+        console.log('Rendering order:', order);
+        const orderDate = new Date(order.created_at).toLocaleDateString();
+        const statusClass = getStatusClass(order.status);
+        const userRole = (typeof currentUserRole !== 'undefined') ? currentUserRole : 'user';
+        const canCancel = order.status === 'pending' && userRole === 'user';
+        const canReceive = order.status === 'shipped' && userRole === 'user';
+        const canApprove = order.status === 'pending' && userRole === 'seller';
+        const canDecline = order.status === 'pending' && userRole === 'seller';
+        const canShip = order.status === 'confirmed' && userRole === 'seller';
+        
+        // Handle both camelCase and snake_case for orderItems
+        const orderItems = order.orderItems || order.order_items || [];
+        const itemsHtml = orderItems.map(item => {
+          const book = item.book || {};
+          const imagePath = (book.image_path || 'default.png').replace(/^uploads\//, '');
+          const imageUrl = uploadsUrl + imagePath;
+          
+          return `
+            <div class="order-item">
+              <img src="${imageUrl}" alt="${book.name}" class="order-item-image" onerror="this.src='${uploadsUrl}default.png'">
+              <div class="order-item-details">
+                <div class="order-item-name">${book.name || 'Unknown Book'}</div>
+                <div class="order-item-info">Quantity: ${item.quantity} × ₱${(parseFloat(item.price || 0) || 0).toFixed(2)} = ₱${(parseFloat(item.subtotal || 0) || 0).toFixed(2)}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="order-card">
+            <div class="order-header">
+              <div>
+                <div class="order-number">${order.order_number}</div>
+                <div class="order-date">Ordered on ${orderDate}</div>
+              </div>
+              <span class="order-status ${statusClass}">${order.status.toUpperCase()}</span>
+            </div>
+            <div class="order-items">${itemsHtml}</div>
+            <div class="order-summary">
+              <div>
+                <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Payment: ${order.payment_method || 'Cash on Delivery'}</div>
+                <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-top: 0.5rem;">Address: ${order.shipping_address}</div>
+              </div>
+              <div class="order-total">₱${(parseFloat(order.total_amount || 0) || 0).toFixed(2)}</div>
+            </div>
+            <div class="order-actions">
+              ${canCancel ? `<button class="action-btn btn-cancel" onclick="cancelOrder(${order.id})">Cancel Order</button>` : ''}
+              ${canReceive ? `<button class="action-btn btn-view" onclick="markAsReceived(${order.id})">Mark as Received</button>` : ''}
+              ${canApprove ? `<button class="action-btn btn-approve" onclick="approveOrder(${order.id})" style="background: linear-gradient(45deg, #10b981, #06b6d4);">Approve Order</button>` : ''}
+              ${canDecline ? `<button class="action-btn btn-decline" onclick="declineOrder(${order.id})" style="background: linear-gradient(45deg, #ef4444, #dc2626);">Decline Order</button>` : ''}
+              ${canShip ? `<button class="action-btn btn-ship" onclick="shipOrder(${order.id})" style="background: linear-gradient(45deg, #3b82f6, #2563eb);">Mark as Shipped</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      console.log('Orders rendered successfully');
+    }
+
+    async function cancelOrder(orderId) {
+      const confirmed = window.Swal && typeof Swal.fire === 'function' 
+        ? (await Swal.fire({ icon: 'question', title: 'Cancel Order', text: 'Are you sure you want to cancel this order?', showCancelButton: true })).isConfirmed
+        : confirm('Cancel this order?');
+
+      if (!confirmed) return;
+
+      try {
+        await api(`/orders/${orderId}/cancel`, { method: 'POST' });
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'success', title: 'Order Cancelled', text: 'Your order has been cancelled successfully' });
+        }
+        await loadOrders();
+      } catch (err) {
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Cancel Failed', text: message });
+        }
+      }
+    }
+
+    async function markAsReceived(orderId) {
+      const confirmed = window.Swal && typeof Swal.fire === 'function' 
+        ? (await Swal.fire({ icon: 'question', title: 'Mark as Received', text: 'Have you received this order?', showCancelButton: true })).isConfirmed
+        : confirm('Mark this order as received?');
+
+      if (!confirmed) return;
+
+      try {
+        await api(`/orders/${orderId}/receive`, { method: 'POST' });
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'success', title: 'Order Received', text: 'Order marked as received. Payment status updated to paid.' });
+        }
+        await loadOrders();
+      } catch (err) {
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Update Failed', text: message });
+        }
+      }
+    }
+
+    async function approveOrder(orderId) {
+      const confirmed = window.Swal && typeof Swal.fire === 'function' 
+        ? (await Swal.fire({ icon: 'question', title: 'Approve Order', text: 'Approve this order? Stock will be deducted.', showCancelButton: true })).isConfirmed
+        : confirm('Approve this order? Stock will be deducted.');
+
+      if (!confirmed) return;
+
+      try {
+        await api(`/orders/${orderId}/status`, { method: 'PUT', data: { status: 'confirmed' } });
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'success', title: 'Order Approved', text: 'Order has been approved and stock has been deducted.' });
+        }
+        await loadOrders();
+      } catch (err) {
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Approval Failed', text: message });
+        } else {
+          alert('Failed to approve order: ' + message);
+        }
+      }
+    }
+
+    async function declineOrder(orderId) {
+      const confirmed = window.Swal && typeof Swal.fire === 'function' 
+        ? (await Swal.fire({ icon: 'warning', title: 'Decline Order', text: 'Are you sure you want to decline this order?', showCancelButton: true })).isConfirmed
+        : confirm('Are you sure you want to decline this order?');
+
+      if (!confirmed) return;
+
+      try {
+        await api(`/orders/${orderId}/status`, { method: 'PUT', data: { status: 'canceled' } });
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'success', title: 'Order Declined', text: 'Order has been declined and canceled.' });
+        }
+        await loadOrders();
+      } catch (err) {
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Decline Failed', text: message });
+        } else {
+          alert('Failed to decline order: ' + message);
+        }
+      }
+    }
+
+    async function shipOrder(orderId) {
+      const confirmed = window.Swal && typeof Swal.fire === 'function' 
+        ? (await Swal.fire({ icon: 'question', title: 'Ship Order', text: 'Mark this order as shipped?', showCancelButton: true })).isConfirmed
+        : confirm('Mark this order as shipped?');
+
+      if (!confirmed) return;
+
+      try {
+        await api(`/orders/${orderId}/status`, { method: 'PUT', data: { status: 'shipped' } });
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'success', title: 'Order Shipped', text: 'Order has been marked as shipped.' });
+        }
+        await loadOrders();
+      } catch (err) {
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Failed', text: message });
+        } else {
+          alert('Failed to ship order: ' + message);
+        }
+      }
+    }
+
+    // Sorting controls event listeners
+    const sortBySelect = document.getElementById('sortBy');
+    const sortOrderBtn = document.getElementById('sortOrder');
+    const sortOrderIcon = document.getElementById('sortOrderIcon');
+    const sortOrderText = document.getElementById('sortOrderText');
+
+    if (sortBySelect) {
+      sortBySelect.addEventListener('change', (e) => {
+        currentSortBy = e.target.value;
+        loadOrders();
+      });
+    }
+
+    if (sortOrderBtn) {
+      sortOrderBtn.addEventListener('click', () => {
+        currentSortOrder = currentSortOrder === 'desc' ? 'asc' : 'desc';
+        updateSortOrderUI();
+        loadOrders();
+      });
+    }
+
+    function updateSortOrderUI() {
+      if (sortOrderIcon && sortOrderText) {
+        if (currentSortOrder === 'desc') {
+          sortOrderIcon.textContent = '↓';
+          sortOrderText.textContent = 'Descending';
+        } else {
+          sortOrderIcon.textContent = '↑';
+          sortOrderText.textContent = 'Ascending';
+        }
+        if (sortOrderBtn) {
+          sortOrderBtn.classList.toggle('active', true);
+        }
+      }
+    }
+
+    // Initialize
+    if (typeof requireAuth === 'function') {
+      requireAuth().then(() => {
+        updateSortOrderUI();
+        loadOrders();
+        if (typeof updateCartBadge === 'function') updateCartBadge();
+      });
+    } else {
+      updateSortOrderUI();
+      loadOrders();
+      if (typeof updateCartBadge === 'function') updateCartBadge();
+    }
+  </script>
+</body>
+</html>
+
+

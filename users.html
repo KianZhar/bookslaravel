@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'self' data: gap: 'unsafe-inline' 'unsafe-eval'; style-src * 'self' 'unsafe-inline'; media-src *; img-src * 'self' data:; connect-src * 'self';" />
+  <title>User Management - Book Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/mobile-responsive.css">
+  <style>
+    :root {
+      --bg-0: #0a0a0a;
+      --bg-1: #1a1a2e;
+      --bg-2: #16213e;
+      --accent-a: #ff6b6b;
+      --accent-b: #4ecdc4;
+      --accent-c: #45b7d1;
+      --glow-1: rgba(255,107,107,0.15);
+      --glow-2: rgba(78,205,196,0.10);
+      --glow-3: rgba(69,183,209,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-0); color: #ffffff; overflow-x: hidden; position: relative; }
+    .bg-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(135deg, var(--bg-0) 0%, var(--bg-1) 50%, var(--bg-2) 100%); overflow: hidden; }
+    .cursor-glow { position: absolute; width: 800px; height: 800px; border-radius: 50%; background: radial-gradient(circle, var(--glow-1) 0%, var(--glow-2) 25%, var(--glow-3) 50%, transparent 70%); pointer-events: none; transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1); transform: translate(-50%, -50%); filter: blur(2px); }
+    .cursor-trail { position: absolute; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(255,107,107,0.08) 0%, rgba(150,206,180,0.06) 40%, transparent 70%); pointer-events: none; transition: all 0.8s cubic-bezier(0.23, 1, 0.320, 1); transform: translate(-50%, -50%); filter: blur(4px); }
+    .cursor-trail-2 { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, var(--glow-2) 0%, var(--glow-1) 50%, transparent 70%); pointer-events: none; transition: all 1.2s cubic-bezier(0.23, 1, 0.320, 1); transform: translate(-50%, -50%); filter: blur(1px); }
+    .bg-gradient::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.06) 0%, transparent 30%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.05) 0%, transparent 30%), radial-gradient(circle at 50% 10%, rgba(120, 219, 255, 0.04) 0%, transparent 40%); animation: ambientGlow 10s ease-in-out infinite; }
+    @keyframes ambientGlow { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.8; } }
+    .navbar { position: fixed; top: 0; width: 100%; z-index: 1000; backdrop-filter: blur(20px); background: rgba(0, 0, 0, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.06); animation: slideDown 0.8s ease-out; }
+    @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .nav-container { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: center; align-items: center; gap: 2rem; }
+    .nav-brand { opacity: 0; animation: fadeInUp 0.8s ease-out 0.2s forwards; text-align: center; }
+    .brand-logo { font-size: 1.8rem; font-weight: 700; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 3s ease-in-out infinite; }
+    @keyframes shimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .brand-tagline { font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); font-weight: 300; }
+    .nav-links { display: flex; gap: 1rem; }
+    .nav-group { display: flex; gap: 1rem; align-items: center; }
+    .nav-link { color: rgba(255, 255, 255, 0.8); text-decoration: none; padding: 0.7rem 1.5rem; border-radius: 50px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; border: none; background: none; cursor: pointer; font-family: inherit; opacity: 0; animation: fadeInUp 0.8s ease-out 0.4s forwards; }
+    .nav-link::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent); transition: left 0.5s ease; }
+    .nav-link:hover::before { left: 100%; }
+    .nav-link:hover { transform: translateY(-2px); color: #ffffff; text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+    .btn-primary { background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); color: white !important; box-shadow: 0 4px 20px rgba(255, 107, 107, 0.18); }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255, 107, 107, 0.28); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.06); color: white !important; border: 1px solid rgba(255, 255, 255, 0.08); }
+    .main-content { min-height: 100vh; padding: 100px 1rem 2rem; position: relative; max-width: 1200px; margin: 0 auto; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .page-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; text-align: center; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-subtitle { font-size: 1.1rem; color: rgba(255,255,255,0.7); text-align:center; margin-bottom: 2rem; }
+    .add-form { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+    .form-group { flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-label { color: rgba(255,255,255,0.9); font-weight: 500; }
+    .form-input, .form-select { padding: 0.75rem 1rem; background: rgba(255,255,255,0.95); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #000; font-size: 1rem; font-family: inherit; }
+    .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent-b); background: rgba(255,255,255,1); box-shadow: 0 0 0 2px rgba(78,205,196,0.2); }
+    .form-select option { background: #fff; color: #000; }
+    .add-btn { padding: 0.75rem 1.5rem; border-radius: 8px; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); border: none; color: #fff; cursor: pointer; font-weight: 600; }
+    .add-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); }
+    .table-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 1rem; overflow-x: auto; }
+    .users-table { width: 100%; border-collapse: collapse; }
+    .users-table th { text-align: left; padding: 1rem; color: rgba(255,255,255,0.9); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .users-table td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .users-table tr:hover { background: rgba(255,255,255,0.02); }
+    .role-badge { padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; }
+    .role-admin { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+    .role-seller { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; }
+    .role-user { background: rgba(255, 255, 255, 0.1); color: rgba(255,255,255,0.8); }
+    .action-btn { padding: 0.4rem 0.8rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.85rem; margin-right: 0.5rem; }
+    .btn-edit { background: linear-gradient(90deg, rgba(78,205,196,0.95), rgba(69,183,209,0.95)); color: #fff; }
+    .btn-delete { background: linear-gradient(90deg, rgba(227,52,47,0.95), rgba(235,80,70,0.95)); color: #fff; }
+    .action-btn:hover { transform: translateY(-2px); }
+    .empty-users { text-align: center; padding: 4rem 2rem; color: rgba(255,255,255,0.6); }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-0); z-index: 9999; display:flex; justify-content:center; align-items:center; }
+    .loading-indicator { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; min-height: 200px; }
+    .loader { width:50px; height:50px; border:3px solid rgba(255,255,255,0.08); border-top:3px solid var(--accent-a); border-radius:50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; z-index: 1001; }
+    .hamburger span { display: block; width: 25px; height: 2px; background: #fff; margin: 5px 0; transition: 0.3s; }
+    .sort-controls { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+    .sort-group { display: flex; gap: 0.5rem; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); }
+    .sort-label { color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-right: 0.5rem; }
+    .sort-select { background: rgba(255,255,255,0.95); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0.5rem 1rem; color: #000; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; }
+    .sort-select:hover { background: rgba(255,255,255,1); border-color: rgba(255,255,255,0.12); }
+    .sort-select:focus { outline: none; border-color: var(--accent-b); box-shadow: 0 0 0 2px rgba(78,205,196,0.2); background: rgba(255,255,255,1); }
+    .sort-select option { background: #fff; color: #000; }
+    .sort-order-btn { background: rgba(78,205,196,0.2); border: 1px solid rgba(78,205,196,0.3); border-radius: 6px; padding: 0.5rem 1rem; color: #4ecdc4; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; }
+    .sort-order-btn:hover { background: rgba(78,205,196,0.3); }
+    .sort-order-btn.active { background: rgba(78,205,196,0.4); border-color: var(--accent-b); }
+    
+    @media (max-width:768px) {
+      .hamburger { display: block; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); }
+      .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+      .hamburger.active span:nth-child(2) { opacity: 0; }
+      .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+      .nav-links { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 5rem 2rem 2rem; gap: 0.5rem; transition: right 0.3s ease; border-left: 1px solid rgba(255,255,255,0.1); }
+      .nav-links.active { right: 0; }
+      .nav-link { width: 100%; text-align: left; padding: 1rem; border-radius: 8px; }
+      .add-form { flex-direction: column; }
+      .form-group { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+    <div class="loader"></div>
+  </div>
+
+  <div class="bg-gradient"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
+  <div class="cursor-trail" id="cursorTrail"></div>
+  <div class="cursor-trail-2" id="cursorTrail2"></div>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <a href="index.html" class="brand-logo">Book Store</a>
+        <div class="brand-tagline">Admin Panel</div>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <div class="nav-group">
+          <a href="index.html" class="nav-link hide-for-admin">Home</a>
+          <a href="users.html" class="nav-link active">Users</a>
+          <a href="orders.html" class="nav-link">Orders</a>
+          <a href="profile.html" class="nav-link">Profile</a>
+          <button class="nav-link auth-only btn-secondary" id="btnLogout" style="display:none;">Logout</button>
+          <a href="login.html" class="nav-link guest-only">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <h1 class="page-title">User Management</h1>
+    <p class="page-subtitle">Manage user accounts and roles</p>
+
+    <!-- SORTING CONTROLS -->
+    <div class="sort-controls">
+      <div class="sort-group">
+        <label class="sort-label">Sort by:</label>
+        <select id="sortBy" class="sort-select">
+          <option value="role">Role</option>
+          <option value="name">Name</option>
+          <option value="username">Username</option>
+          <option value="email">Email</option>
+          <option value="created_at">Created Date</option>
+        </select>
+        <button id="sortOrder" class="sort-order-btn" data-order="asc">
+          <span id="sortOrderIcon">↑</span>
+          <span id="sortOrderText">Ascending</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ADD USER FORM -->
+    <form id="addUserForm" class="add-form">
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" name="name" class="form-input" placeholder="Full name" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-input" placeholder="Username" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-input" placeholder="Email address" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contact Number</label>
+        <input type="text" name="contact_number" class="form-input" placeholder="Contact number" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-input" placeholder="Password (min 6 chars)" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select name="role" class="form-select" required>
+          <option value="user">User</option>
+          <option value="seller">Seller</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="add-btn">Add User</button>
+    </form>
+
+    <!-- USERS TABLE -->
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+      <div class="loader"></div>
+      <p style="margin-top: 1rem; color: rgba(255,255,255,0.7);">Loading users...</p>
+    </div>
+    <div class="table-container">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Contact</th>
+            <th>Role</th>
+            <th>Verified</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          <tr>
+            <td colspan="9" class="empty-users">Loading users...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SweetAlert2 for dialogs -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+  <script src="config.js"></script>
+  <script src="error-handler.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Mobile menu toggle
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+      });
+    }
+
+    let users = [];
+    let editingUserId = null;
+    let currentUserId = null;
+    let currentSortBy = 'role';
+    let currentSortOrder = 'asc';
+
+    async function loadUsers() {
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      const tableContainer = document.querySelector('.table-container');
+      
+      // Show loading indicator BEFORE starting fetch
+      if (loadingIndicator) loadingIndicator.style.display = 'flex';
+      if (tableContainer) tableContainer.style.display = 'none';
+      
+      try {
+        // Get current user info to identify admin's own account
+        try {
+          const currentUser = await api('/users/me');
+          currentUserId = currentUser.id;
+        } catch (e) {
+          console.warn('Could not get current user info:', e);
+        }
+        
+        const sortParams = `?sort_by=${currentSortBy}&sort_order=${currentSortOrder}`;
+        const response = await api('/admin/users' + sortParams);
+        
+        // Handle both old format (array) and new format (object with users array)
+        if (Array.isArray(response)) {
+          users = response;
+        } else if (response.users && Array.isArray(response.users)) {
+          users = response.users;
+        } else {
+          users = [];
+        }
+        
+        renderUsers();
+      } catch (err) {
+        console.error('Failed to load users:', err);
+        if (err.message && err.message.includes('Forbidden')) {
+          location.href = 'books.html';
+        }
+      } finally {
+        // Hide loading indicator and show table
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        if (tableContainer) tableContainer.style.display = 'block';
+      }
+    }
+
+    function renderUsers() {
+      const tbody = document.getElementById('usersTableBody');
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-users">No users found</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map(user => {
+        const roleClass = `role-${user.role || 'user'}`;
+        const verified = user.email_verified ? '✓' : '✗';
+        const createdDate = new Date(user.created_at).toLocaleDateString();
+        const isCurrentUser = currentUserId && user.id === currentUserId;
+        
+        return `
+          <tr>
+            <td>${user.id}</td>
+            <td>${user.name || 'N/A'}</td>
+            <td>${user.username || 'N/A'}</td>
+            <td>${user.email || 'N/A'}</td>
+            <td>${user.contact_number || 'N/A'}</td>
+            <td><span class="role-badge ${roleClass}">${(user.role || 'user').toUpperCase()}</span></td>
+            <td>${verified}</td>
+            <td>${createdDate}</td>
+            <td>
+              <button class="action-btn btn-edit" onclick="editUser(${user.id})">Edit</button>
+              ${isCurrentUser 
+                ? '<button class="action-btn btn-delete" disabled style="opacity:0.5; cursor:not-allowed;" title="Cannot delete your own account">Delete</button>'
+                : `<button class="action-btn btn-delete" onclick="deleteUser(${user.id})">Delete</button>`
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function editUser(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+
+      const form = document.getElementById('addUserForm');
+      form.style.display = 'flex';
+      editingUserId = userId;
+
+      // Populate form
+      form.name.value = user.name || '';
+      form.username.value = user.username || '';
+      form.email.value = user.email || '';
+      form.contact_number.value = user.contact_number || '';
+      form.role.value = user.role || 'user';
+      form.password.required = false; // Password optional for edit
+
+      // Scroll to form
+      form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function deleteUser(userId) {
+      const confirmed = window.Swal && typeof Swal.fire === 'function' 
+        ? (await Swal.fire({ icon: 'warning', title: 'Delete User', text: 'Are you sure? This cannot be undone.', showCancelButton: true })).isConfirmed
+        : confirm('Delete this user?');
+
+      if (!confirmed) return;
+
+      try {
+        await api(`/admin/users/${userId}`, { method: 'DELETE' });
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'success', title: 'User Deleted', text: 'User has been deleted successfully' });
+        }
+        await loadUsers();
+      } catch (err) {
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Delete Failed', text: message });
+        }
+      }
+    }
+
+    document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      
+      // Debug logging
+      console.log('Form submission - Raw form data:', Array.from(formData.entries()));
+      console.log('Form submission - Extracted data:', data);
+
+      try {
+        if (editingUserId) {
+          // Update existing user
+          if (!data.password) delete data.password; // Remove password if empty
+          await api(`/admin/users/${editingUserId}`, { method: 'PUT', data });
+          if (window.Swal && typeof Swal.fire === 'function') {
+            Swal.fire({ icon: 'success', title: 'User Updated', text: 'User has been updated successfully' });
+          }
+          editingUserId = null;
+        } else {
+          // Create new user - use admin endpoint
+          console.log('Creating user with data:', data);
+          // Ensure all required fields are present
+          if (!data.name || !data.username || !data.email || !data.contact_number || !data.password || !data.role) {
+            const missing = [];
+            if (!data.name) missing.push('name');
+            if (!data.username) missing.push('username');
+            if (!data.email) missing.push('email');
+            if (!data.contact_number) missing.push('contact_number');
+            if (!data.password) missing.push('password');
+            if (!data.role) missing.push('role');
+            throw { message: `Missing required fields: ${missing.join(', ')}` };
+          }
+          await api('/admin/users', { method: 'POST', data });
+          if (window.Swal && typeof Swal.fire === 'function') {
+            Swal.fire({ icon: 'success', title: 'User Created', text: 'User has been created successfully.' });
+          }
+        }
+        
+        form.reset();
+        form.style.display = 'none';
+        await loadUsers();
+      } catch (err) {
+        let message = 'An error occurred';
+        
+        // Handle validation errors
+        if (err.errors && typeof err.errors === 'object') {
+          const errorMessages = [];
+          for (const [field, messages] of Object.entries(err.errors)) {
+            if (Array.isArray(messages)) {
+              errorMessages.push(`${field}: ${messages.join(', ')}`);
+            } else {
+              errorMessages.push(`${field}: ${messages}`);
+            }
+          }
+          message = errorMessages.join('\n');
+        } else if (err.message) {
+          message = err.message;
+        } else {
+          message = JSON.stringify(err, null, 2);
+        }
+        
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ 
+            icon: 'error', 
+            title: 'Operation Failed', 
+            text: message,
+            width: '500px'
+          });
+        } else {
+          console.error('Error:', err);
+          alert(message);
+        }
+      }
+    });
+
+    // Show add form button (can be added if needed)
+    // For now, admin can edit existing users or register new ones through registration
+
+    // Sort controls
+    const sortBySelect = document.getElementById('sortBy');
+    const sortOrderBtn = document.getElementById('sortOrder');
+    const sortOrderIcon = document.getElementById('sortOrderIcon');
+    const sortOrderText = document.getElementById('sortOrderText');
+
+    if (sortBySelect) {
+      sortBySelect.value = currentSortBy;
+      sortBySelect.addEventListener('change', (e) => {
+        currentSortBy = e.target.value;
+        loadUsers();
+      });
+    }
+
+    if (sortOrderBtn) {
+      sortOrderBtn.addEventListener('click', () => {
+        currentSortOrder = currentSortOrder === 'desc' ? 'asc' : 'desc';
+        updateSortOrderUI();
+        loadUsers();
+      });
+    }
+
+    function updateSortOrderUI() {
+      if (sortOrderIcon && sortOrderText) {
+        if (currentSortOrder === 'desc') {
+          sortOrderIcon.textContent = '↓';
+          sortOrderText.textContent = 'Descending';
+        } else {
+          sortOrderIcon.textContent = '↑';
+          sortOrderText.textContent = 'Ascending';
+        }
+        if (sortOrderBtn) {
+          sortOrderBtn.classList.toggle('active', true);
+        }
+      }
+    }
+
+    // Initialize
+    if (typeof requireAuth === 'function') {
+      requireAuth().then(async () => {
+        // Check if user is admin
+        try {
+          const user = await api('/users/me');
+          if (user.role !== 'admin') {
+            location.href = 'books.html';
+            return;
+          }
+          updateSortOrderUI();
+          await loadUsers();
+        } catch (e) {
+          location.href = 'login.html';
+        }
+      });
+    } else {
+      updateSortOrderUI();
+      loadUsers();
+    }
+  </script>
+</body>
+</html>
+
