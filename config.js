@@ -1,24 +1,18 @@
 // Backend API Configuration
 // 
-// LOCAL DEVELOPMENT: Use localhost (default)
-// PRODUCTION (GitHub Pages): Update SERVER_IP to your backend server domain/IP
-//
-// For local development, keep as is:
-const SERVER_IP = 'localhost';
-const SERVER_PORT = '8000';
+// PRODUCTION (GitHub Pages): Connected to Hostinger backend
+// Frontend: https://kianzhar.github.io/bookslaravel/
+// Backend: https://ccs4thyear.com/Books/Kian_Laravel/
 
-// For production/GitHub Pages, uncomment and update:
-// const SERVER_IP = 'your-backend-server.com';  // Your backend server domain
-// const SERVER_PORT = '8000';  // Or remove if using standard ports
+// Production backend URL
+const SERVER_BASE_URL = 'https://ccs4thyear.com/Books/Kian_Laravel';
 
-const SERVER_BASE_URL = `http://${SERVER_IP}:${SERVER_PORT}`;
-
-// For HTTPS backend in production, use:
-// const SERVER_BASE_URL = `https://${SERVER_IP}`;
+// For local development, uncomment these lines and comment out SERVER_BASE_URL above:
+// const SERVER_IP = 'localhost';
+// const SERVER_PORT = '8000';
+// const SERVER_BASE_URL = `http://${SERVER_IP}:${SERVER_PORT}`;
 
 window.CONFIG = {
-  SERVER_IP: SERVER_IP,
-  SERVER_PORT: SERVER_PORT,
   BASE_URL: SERVER_BASE_URL + '/',
   API_URL: `${SERVER_BASE_URL}/api`,
   UPLOADS_URL: `${SERVER_BASE_URL}/uploads/`
