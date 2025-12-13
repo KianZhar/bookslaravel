@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test - Kian Laravel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .test-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        .test-item label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .test-item .url {
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            word-break: break-all;
+            margin-bottom: 8px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .status.pending {
+            background: #ffc107;
+            color: #000;
+        }
+        .status.success {
+            background: #28a745;
+            color: white;
+        }
+        .status.error {
+            background: #dc3545;
+            color: white;
+        }
+        .response {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .cors-headers {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e7f3ff;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .cors-headers h4 {
+            margin-bottom: 8px;
+            color: #0066cc;
+        }
+        .cors-headers ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .cors-headers li {
+            padding: 4px 0;
+            color: #333;
+        }
+        .cors-headers .header-name {
+            font-weight: 600;
+            color: #0066cc;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .summary h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .summary .result {
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+        .result.success {
+            color: #28a745;
+        }
+        .result.error {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 Backend Connection Test</h1>
+        <p class="subtitle">Testing connection between GitHub Pages Frontend and Hostinger Backend</p>
+
+        <div class="test-section">
+            <h2>1. API Endpoint Tests</h2>
+            
+            <div class="test-item" id="test-books">
+                <label>GET /api/books (Public Books List)</label>
+                <div class="url">https://ccs4thyear.com/Books/Kian_Laravel/api/books</div>
+                <span class="status pending" id="status-books">Testing...</span>
+                <button onclick="testBooks()">Test Again</button>
+                <div class="response" id="response-books" style="display:none;"></div>
+                <div class="cors-headers" id="cors-books" style="display:none;"></div>
+            </div>
+
+            <div class="test-item" id="test-register">
+                <label>POST /api/auth/register (Registration Endpoint)</label>
+                <div class="url">https://ccs4thyear.com/Books/Kian_Laravel/api/auth/register</div>
+                <span class="status pending" id="status-register">Testing...</span>
+                <button onclick="testRegister()">Test Again</button>
+                <div class="response" id="response-register" style="display:none;"></div>
+                <div class="cors-headers" id="cors-register" style="display:none;"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. CORS Preflight Test</h2>
+            
+            <div class="test-item" id="test-cors">
+                <label>OPTIONS Request (CORS Preflight)</label>
+                <div class="url">OPTIONS https://ccs4thyear.com/Books/Kian_Laravel/api/auth/register</div>
+                <span class="status pending" id="status-cors">Testing...</span>
+                <button onclick="testCORS()">Test Again</button>
+                <div class="response" id="response-cors" style="display:none;"></div>
+                <div class="cors-headers" id="cors-headers" style="display:none;"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Frontend Configuration</h2>
+            
+            <div class="test-item">
+                <label>Frontend URL</label>
+                <div class="url" id="frontend-url">https://kianzhar.github.io/bookslaravel/</div>
+            </div>
+
+            <div class="test-item">
+                <label>Backend API URL (from config.js)</label>
+                <div class="url" id="backend-url">Loading...</div>
+            </div>
+
+            <div class="test-item">
+                <label>Connection Status</label>
+                <div class="url" id="connection-status">Checking...</div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <h3>Overall Test Result</h3>
+            <div class="result" id="overall-result">Running tests...</div>
+        </div>
+    </div>
+
+    <script>
+        // Load config if available
+        let backendUrl = 'https://ccs4thyear.com/Books/Kian_Laravel';
+        let apiUrl = backendUrl + '/api';
+
+        // Try to load config.js
+        const script = document.createElement('script');
+        script.src = 'https://kianzhar.github.io/bookslaravel/config.js';
+        script.onload = function() {
+            if (window.CONFIG && window.CONFIG.API_URL) {
+                apiUrl = window.CONFIG.API_URL;
+                backendUrl = apiUrl.replace('/api', '');
+            }
+            updateConfigDisplay();
+        };
+        script.onerror = function() {
+            updateConfigDisplay();
+        };
+        document.head.appendChild(script);
+
+        function updateConfigDisplay() {
+            document.getElementById('backend-url').textContent = apiUrl;
+            document.getElementById('connection-status').textContent = 
+                apiUrl.includes('ccs4thyear.com') ? '✅ Configured correctly' : '⚠️ May need configuration';
+        }
+
+        async function testBooks() {
+            const statusEl = document.getElementById('status-books');
+            const responseEl = document.getElementById('response-books');
+            const corsEl = document.getElementById('cors-books');
+            
+            statusEl.textContent = 'Testing...';
+            statusEl.className = 'status pending';
+            responseEl.style.display = 'none';
+            corsEl.style.display = 'none';
+
+            try {
+                const response = await fetch(apiUrl + '/books', {
+                    method: 'GET',
+                    headers: {
+                        'Origin': 'https://kianzhar.github.io'
+                    }
+                });
+
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+
+                const data = await response.json().catch(() => ({ text: await response.text() }));
+
+                statusEl.textContent = response.ok ? '✅ Success' : '❌ Error';
+                statusEl.className = response.ok ? 'status success' : 'status error';
+                
+                responseEl.textContent = JSON.stringify(data, null, 2);
+                responseEl.style.display = 'block';
+
+                // Show CORS headers
+                const corsHeaders = ['access-control-allow-origin', 'access-control-allow-methods', 
+                                   'access-control-allow-headers', 'access-control-allow-credentials'];
+                let corsHtml = '<h4>CORS Headers:</h4><ul>';
+                corsHeaders.forEach(header => {
+                    if (headers[header]) {
+                        corsHtml += `<li><span class="header-name">${header}:</span> ${headers[header]}</li>`;
+                    }
+                });
+                corsHtml += '</ul>';
+                corsEl.innerHTML = corsHtml;
+                corsEl.style.display = 'block';
+
+                updateOverallStatus();
+            } catch (error) {
+                statusEl.textContent = '❌ Failed';
+                statusEl.className = 'status error';
+                responseEl.textContent = 'Error: ' + error.message;
+                responseEl.style.display = 'block';
+                updateOverallStatus();
+            }
+        }
+
+        async function testRegister() {
+            const statusEl = document.getElementById('status-register');
+            const responseEl = document.getElementById('response-register');
+            const corsEl = document.getElementById('cors-register');
+            
+            statusEl.textContent = 'Testing...';
+            statusEl.className = 'status pending';
+            responseEl.style.display = 'none';
+            corsEl.style.display = 'none';
+
+            try {
+                const response = await fetch(apiUrl + '/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'https://kianzhar.github.io'
+                    },
+                    body: JSON.stringify({
+                        name: 'Test User',
+                        username: 'testuser' + Date.now(),
+                        email: 'test' + Date.now() + '@example.com',
+                        password: 'test123456',
+                        contact_number: '1234567890'
+                    })
+                });
+
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+
+                const data = await response.json().catch(() => ({ text: await response.text() }));
+
+                // Registration might fail with validation errors, which is expected
+                statusEl.textContent = response.status < 500 ? '✅ Endpoint Accessible' : '❌ Server Error';
+                statusEl.className = response.status < 500 ? 'status success' : 'status error';
+                
+                responseEl.textContent = JSON.stringify(data, null, 2);
+                responseEl.style.display = 'block';
+
+                // Show CORS headers
+                const corsHeaders = ['access-control-allow-origin', 'access-control-allow-methods', 
+                                   'access-control-allow-headers', 'access-control-allow-credentials'];
+                let corsHtml = '<h4>CORS Headers:</h4><ul>';
+                corsHeaders.forEach(header => {
+                    if (headers[header]) {
+                        corsHtml += `<li><span class="header-name">${header}:</span> ${headers[header]}</li>`;
+                    }
+                });
+                corsHtml += '</ul>';
+                corsEl.innerHTML = corsHtml;
+                corsEl.style.display = 'block';
+
+                updateOverallStatus();
+            } catch (error) {
+                statusEl.textContent = '❌ Failed';
+                statusEl.className = 'status error';
+                responseEl.textContent = 'Error: ' + error.message + '\n\nThis might indicate:\n- Backend is not accessible\n- CORS is blocking the request\n- Network connectivity issue';
+                responseEl.style.display = 'block';
+                updateOverallStatus();
+            }
+        }
+
+        async function testCORS() {
+            const statusEl = document.getElementById('status-cors');
+            const responseEl = document.getElementById('response-cors');
+            const corsEl = document.getElementById('cors-headers');
+            
+            statusEl.textContent = 'Testing...';
+            statusEl.className = 'status pending';
+            responseEl.style.display = 'none';
+            corsEl.style.display = 'none';
+
+            try {
+                const response = await fetch(apiUrl + '/auth/register', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': 'https://kianzhar.github.io',
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'content-type'
+                    }
+                });
+
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+
+                statusEl.textContent = response.ok ? '✅ CORS Preflight OK' : '❌ CORS Issue';
+                statusEl.className = response.ok ? 'status success' : 'status error';
+                
+                responseEl.textContent = `Status: ${response.status} ${response.statusText}\n\nResponse Headers:\n${JSON.stringify(headers, null, 2)}`;
+                responseEl.style.display = 'block';
+
+                // Show CORS headers
+                const corsHeaders = ['access-control-allow-origin', 'access-control-allow-methods', 
+                                   'access-control-allow-headers', 'access-control-allow-credentials',
+                                   'access-control-max-age'];
+                let corsHtml = '<h4>CORS Headers:</h4><ul>';
+                let hasCorsHeaders = false;
+                corsHeaders.forEach(header => {
+                    if (headers[header]) {
+                        corsHtml += `<li><span class="header-name">${header}:</span> ${headers[header]}</li>`;
+                        hasCorsHeaders = true;
+                    }
+                });
+                if (!hasCorsHeaders) {
+                    corsHtml += '<li style="color: #dc3545;">⚠️ No CORS headers found!</li>';
+                }
+                corsHtml += '</ul>';
+                corsEl.innerHTML = corsHtml;
+                corsEl.style.display = 'block';
+
+                updateOverallStatus();
+            } catch (error) {
+                statusEl.textContent = '❌ Failed';
+                statusEl.className = 'status error';
+                responseEl.textContent = 'Error: ' + error.message;
+                responseEl.style.display = 'block';
+                updateOverallStatus();
+            }
+        }
+
+        function updateOverallStatus() {
+            const statuses = [
+                document.getElementById('status-books').className,
+                document.getElementById('status-register').className,
+                document.getElementById('status-cors').className
+            ];
+
+            const allPending = statuses.every(s => s.includes('pending'));
+            const allSuccess = statuses.every(s => s.includes('success'));
+            const hasError = statuses.some(s => s.includes('error'));
+
+            const resultEl = document.getElementById('overall-result');
+            
+            if (allPending) {
+                resultEl.textContent = 'Running tests...';
+                resultEl.className = 'result';
+            } else if (allSuccess) {
+                resultEl.textContent = '✅ All Tests Passed - Connection Working!';
+                resultEl.className = 'result success';
+            } else if (hasError) {
+                resultEl.textContent = '❌ Some Tests Failed - Check Details Above';
+                resultEl.className = 'result error';
+            } else {
+                resultEl.textContent = '⚠️ Tests Incomplete';
+                resultEl.className = 'result';
+            }
+        }
+
+        // Run all tests on page load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                testBooks();
+                testRegister();
+                testCORS();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
