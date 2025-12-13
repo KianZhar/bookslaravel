@@ -58,6 +58,8 @@
     .status-shipped { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; }
     .status-received { background: rgba(40, 167, 69, 0.2); color: #28a745; }
     .status-canceled { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+    .status-declined { background: rgba(255, 87, 34, 0.2); color: #ff5722; }
+    .status-completed { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
     .order-items { margin: 1rem 0; }
     .order-item { display: flex; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 0.5rem; align-items: center; }
     .order-item-image { width: 60px; height: 60px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.06); }
@@ -294,7 +296,9 @@
         'confirmed': 'status-confirmed',
         'shipped': 'status-shipped',
         'received': 'status-received',
-        'canceled': 'status-canceled'
+        'canceled': 'status-canceled',
+        'declined': 'status-declined',
+        'completed': 'status-completed'
       };
       return statusMap[status] || 'status-pending';
     }
@@ -327,6 +331,7 @@
         const canApprove = order.status === 'pending' && userRole === 'seller';
         const canDecline = order.status === 'pending' && userRole === 'seller';
         const canShip = order.status === 'confirmed' && userRole === 'seller';
+        const canMarkComplete = order.status === 'received' && userRole === 'seller';
         
         // Handle both camelCase and snake_case for orderItems
         const orderItems = order.orderItems || order.order_items || [];
@@ -369,6 +374,7 @@
               ${canApprove ? `<button class="action-btn btn-approve" onclick="approveOrder(${order.id})" style="background: linear-gradient(45deg, #10b981, #06b6d4);">Approve Order</button>` : ''}
               ${canDecline ? `<button class="action-btn btn-decline" onclick="declineOrder(${order.id})" style="background: linear-gradient(45deg, #ef4444, #dc2626);">Decline Order</button>` : ''}
               ${canShip ? `<button class="action-btn btn-ship" onclick="shipOrder(${order.id})" style="background: linear-gradient(45deg, #3b82f6, #2563eb);">Mark as Shipped</button>` : ''}
+              ${canMarkComplete ? `<button class="action-btn btn-complete" onclick="markAsComplete(${order.id})" style="background: linear-gradient(45deg, #4caf50, #45b7d1);">Mark as Complete</button>` : ''}
             </div>
           </div>
         `;
@@ -450,9 +456,9 @@
       if (!confirmed) return;
 
       try {
-        await api(`/orders/${orderId}/status`, { method: 'PUT', data: { status: 'canceled' } });
+        await api(`/orders/${orderId}/status`, { method: 'PUT', data: { status: 'declined' } });
         if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'success', title: 'Order Declined', text: 'Order has been declined and canceled.' });
+          Swal.fire({ icon: 'success', title: 'Order Declined', text: 'Order has been declined.' });
         }
         await loadOrders();
       } catch (err) {
@@ -484,6 +490,29 @@
           Swal.fire({ icon: 'error', title: 'Failed', text: message });
         } else {
           alert('Failed to ship order: ' + message);
+        }
+      }
+    }
+
+    async function markAsComplete(orderId) {
+      const confirmed = window.Swal && typeof Swal.fire === 'function' 
+        ? (await Swal.fire({ icon: 'question', title: 'Mark as Complete', text: 'Mark this order as completed?', showCancelButton: true })).isConfirmed
+        : confirm('Mark this order as completed?');
+
+      if (!confirmed) return;
+
+      try {
+        await api(`/orders/${orderId}/status`, { method: 'PUT', data: { status: 'completed' } });
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'success', title: 'Order Completed', text: 'Order has been marked as completed.' });
+        }
+        await loadOrders();
+      } catch (err) {
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Failed', text: message });
+        } else {
+          alert('Failed to mark order as complete: ' + message);
         }
       }
     }

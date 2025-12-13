@@ -334,6 +334,22 @@
       form.role.value = user.role || 'user';
       form.password.required = false; // Password optional for edit
 
+      // Disable role field if editing own account
+      const isCurrentUser = currentUserId && userId === currentUserId;
+      const roleField = form.role;
+      if (roleField) {
+        roleField.disabled = isCurrentUser;
+        if (isCurrentUser) {
+          roleField.style.opacity = '0.5';
+          roleField.style.cursor = 'not-allowed';
+          roleField.title = 'Cannot change your own role';
+        } else {
+          roleField.style.opacity = '1';
+          roleField.style.cursor = 'default';
+          roleField.title = '';
+        }
+      }
+
       // Scroll to form
       form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
@@ -399,6 +415,15 @@
         }
         
         form.reset();
+        // Re-enable role field after reset
+        const roleField = form.role;
+        if (roleField) {
+          roleField.disabled = false;
+          roleField.style.opacity = '1';
+          roleField.style.cursor = 'default';
+          roleField.title = '';
+        }
+        editingUserId = null;
         form.style.display = 'none';
         await loadUsers();
       } catch (err) {

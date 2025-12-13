@@ -427,13 +427,10 @@ if (passwordForm) {
 // Books list page (create/list/delete)
 // ===================================
 const addForm = document.getElementById('addForm');
+const tblBody = document.querySelector('#tbl tbody');
 const booksGrid = document.getElementById('booksGrid');
-const booksGridContainer = document.getElementById('booksGridContainer');
 const msg = document.getElementById('booksMsg');
 const search = document.getElementById('search');
-const bookModal = document.getElementById('bookModal');
-const bookModalClose = document.getElementById('bookModalClose');
-let currentBookData = null; // Store current book data for modal
 
 // Store current user role
 let currentUserRole = 'user';
@@ -512,476 +509,154 @@ function updateNavigationByRole(role) {
   });
 }
 
-// Render table row for a book
-function renderBookCard(book) {
+// Render book card for grid layout
+function renderBookCard(row) {
   const baseUrl = window.CONFIG ? window.CONFIG.BASE_URL : 'http://localhost:8000/';
   const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
   
   // Construct image URL properly
-  let imagePath = String(book.image_path || 'default.png');
+  let imagePath = String(row.image_path || 'default.png');
+  // Remove 'uploads/' prefix if present (UPLOADS_URL already includes it)
   imagePath = imagePath.replace(/^uploads\//, '');
+  // Remove leading slash if present
   imagePath = imagePath.replace(/^\//, '');
   
+  // Build image URL using UPLOADS_URL (which already ends with /uploads/)
   const baseImgUrl = uploadsUrl + imagePath;
   const separator = baseImgUrl.includes('?') ? '&' : '?';
-  const timestamp = book.updated_at ? new Date(book.updated_at).getTime() : (book.created_at ? new Date(book.created_at).getTime() : Date.now());
-  const imgUrl = baseImgUrl + separator + 'id=' + book.id + '&v=' + timestamp;
+  const timestamp = row.updated_at ? new Date(row.updated_at).getTime() : (row.created_at ? new Date(row.created_at).getTime() : Date.now());
+  const imgUrl = baseImgUrl + separator + 'id=' + row.id + '&v=' + timestamp;
   const defaultImg = uploadsUrl + 'default.png';
   
-  const isInStock = (book.stock_quantity || 0) > 0;
-  const price = parseFloat(book.price || 0).toFixed(2);
+  const stockQuantity = parseInt(row.stock_quantity || 0);
+  const isInStock = stockQuantity > 0;
+  const stockClass = isInStock ? 'in-stock' : 'out-of-stock';
+  const stockText = isInStock ? `${stockQuantity} in stock` : 'Out of stock';
   
   const card = document.createElement('div');
   card.className = 'book-card';
-  card.dataset.bookId = book.id;
-  // Store full book data for modal
-  card.dataset.bookData = JSON.stringify(book);
+  card.dataset.bookId = row.id;
+  card.dataset.stockQuantity = stockQuantity;
+  card.dataset.bookName = row.name || '';
+  
+  // Make card clickable to navigate to detail page
+  card.addEventListener('click', (e) => {
+    // Don't navigate if clicking on action buttons (for sellers/admins)
+    if (e.target.closest('.action-btn')) return;
+    window.location.href = `book-detail.html?id=${row.id}`;
+  });
   
   card.innerHTML = `
-    <img src="${imgUrl}" alt="${book.name || 'Book'}" class="book-card-image"
+    <img src="${imgUrl}" alt="${row.name || 'Book'}" class="book-card-image"
          onerror="if(!this.dataset.retry) { this.dataset.retry='1'; setTimeout(() => { const baseUrl = this.src.split('?')[0]; this.src = baseUrl + '?retry=' + Date.now(); }, 1000); } else { this.onerror=null; if(this.src !== '${defaultImg}') this.src='${defaultImg}'; }"
          loading="lazy">
-    <div class="book-card-price">₱${price}</div>
-    <div class="book-card-stock ${isInStock ? 'in-stock' : 'out-of-stock'}">
-      ${isInStock ? `${book.stock_quantity || 0} in stock` : 'Out of stock'}
-    </div>
+    <h3 class="book-card-title">${row.name || 'Untitled'}</h3>
+    <div class="book-card-price">₱${parseFloat(row.price || 0).toFixed(2)}</div>
+    <div class="book-card-stock ${stockClass}">${stockText}</div>
   `;
   
-  // Make card clickable
-  card.addEventListener('click', () => {
-    openBookModal(book);
-  });
+  // For sellers/admins, add action buttons (but they won't interfere with card click)
+  const isSeller = currentUserRole === 'seller';
+  const isAdmin = currentUserRole === 'admin';
+  
+  if (isSeller || isAdmin) {
+    const actionsDiv = document.createElement('div');
+    actionsDiv.style.cssText = 'display: flex; gap: 0.5rem; margin-top: 0.5rem;';
+    
+    if (isSeller) {
+      actionsDiv.innerHTML = `
+        <button class="action-btn btn-edit" data-action="edit" data-id="${row.id}" style="flex: 1;">Edit</button>
+        <button class="action-btn btn-delete" data-action="delete" data-id="${row.id}" style="flex: 1;">Delete</button>
+      `;
+    } else if (isAdmin) {
+      actionsDiv.innerHTML = `<span style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">View Only</span>`;
+    }
+    
+    card.appendChild(actionsDiv);
+  }
   
   if (booksGrid) {
     booksGrid.appendChild(card);
   }
 }
 
-function openBookModal(book) {
-  if (!bookModal) return;
-  
-  currentBookData = book;
+// Render table row for a book (kept for backward compatibility if table exists)
+function renderRow(row) {
+  if (!tblBody) return; // If table doesn't exist, skip
   
   const baseUrl = window.CONFIG ? window.CONFIG.BASE_URL : 'http://localhost:8000/';
   const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
   
-  // Construct image URL
-  let imagePath = String(book.image_path || 'default.png');
+  // Construct image URL properly
+  let imagePath = String(row.image_path || 'default.png');
+  // Remove 'uploads/' prefix if present (UPLOADS_URL already includes it)
   imagePath = imagePath.replace(/^uploads\//, '');
+  // Remove leading slash if present
   imagePath = imagePath.replace(/^\//, '');
+  
+  // Build image URL using UPLOADS_URL (which already ends with /uploads/)
   const baseImgUrl = uploadsUrl + imagePath;
   const separator = baseImgUrl.includes('?') ? '&' : '?';
-  const timestamp = book.updated_at ? new Date(book.updated_at).getTime() : (book.created_at ? new Date(book.created_at).getTime() : Date.now());
-  const imgUrl = baseImgUrl + separator + 'id=' + book.id + '&v=' + timestamp;
+  const timestamp = row.updated_at ? new Date(row.updated_at).getTime() : (row.created_at ? new Date(row.created_at).getTime() : Date.now());
+  const imgUrl = baseImgUrl + separator + 'id=' + row.id + '&v=' + timestamp;
+  const defaultImg = uploadsUrl + 'default.png';
   
-  // Update modal content
-  document.getElementById('bookModalImage').src = imgUrl;
-  document.getElementById('bookModalTitle').textContent = book.name || 'Untitled Book';
-  document.getElementById('bookModalISBN').textContent = book.ISBN || 'N/A';
-  document.getElementById('bookModalDescription').textContent = book.description || 'No description available';
-  document.getElementById('bookModalStock').textContent = `${book.stock_quantity || 0} available`;
-  document.getElementById('bookModalPrice').textContent = `₱${parseFloat(book.price || 0).toFixed(2)}`;
-  
-  // Set up actions based on user role
+  // Determine actions based on user role
   const isSeller = currentUserRole === 'seller';
   const isAdmin = currentUserRole === 'admin';
-  const isInStock = (book.stock_quantity || 0) > 0;
-  const actionsContainer = document.getElementById('bookModalActions');
+  const isInStock = (row.stock_quantity || 0) > 0;
   
-  if (actionsContainer) {
-    actionsContainer.innerHTML = '';
-    
-    if (isSeller) {
-      // Seller can edit/delete
-      const editBtn = document.createElement('button');
-      editBtn.className = 'book-modal-btn book-modal-btn-primary';
-      editBtn.textContent = 'Edit Book';
-      editBtn.onclick = () => {
-        closeBookModal();
-        location.href = `edit.html?id=${book.id}`;
-      };
-      
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'book-modal-btn book-modal-btn-secondary';
-      deleteBtn.textContent = 'Delete Book';
-      deleteBtn.onclick = () => {
-        closeBookModal();
-        deleteBook(book.id);
-      };
-      
-      actionsContainer.appendChild(editBtn);
-      actionsContainer.appendChild(deleteBtn);
-    } else if (isAdmin) {
-      // Admin view only
-      const viewOnly = document.createElement('div');
-      viewOnly.style.color = 'rgba(255,255,255,0.5)';
-      viewOnly.style.textAlign = 'center';
-      viewOnly.style.padding = '1rem';
-      viewOnly.textContent = 'View Only';
-      actionsContainer.appendChild(viewOnly);
-    } else {
-      // Regular users can add to cart
-      const addToCartBtn = document.createElement('button');
-      addToCartBtn.className = 'book-modal-btn book-modal-btn-primary';
-      addToCartBtn.textContent = isInStock ? 'Add to Cart' : 'Out of Stock';
-      addToCartBtn.disabled = !isInStock;
-      addToCartBtn.onclick = () => {
-        if (isInStock) {
-          addToCartFromModal(book);
-        }
-      };
-      actionsContainer.appendChild(addToCartBtn);
-    }
+  let actionsHtml = '';
+  if (isSeller) {
+    // Seller can edit/delete their own books
+    actionsHtml = `
+      <button class="action-btn btn-edit" data-action="edit" data-id="${row.id}">Edit</button>
+      <button class="action-btn btn-delete" data-action="delete" data-id="${row.id}">Delete</button>
+    `;
+  } else if (isAdmin) {
+    // Admin can only view books (no actions)
+    actionsHtml = `<span style="color: rgba(255,255,255,0.5);">View Only</span>`;
+  } else {
+    // Regular users can add to cart
+    actionsHtml = `
+      <button class="action-btn btn-add-cart" data-action="add-cart" data-id="${row.id}" ${!isInStock ? 'disabled' : ''}>
+        ${isInStock ? 'Add to Cart' : 'Out of Stock'}
+      </button>
+    `;
   }
   
-  bookModal.classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeBookModal() {
-  if (bookModal) {
-    bookModal.classList.remove('active');
-    document.body.style.overflow = '';
-    currentBookData = null;
-  }
-}
-
-// Modal close handlers
-if (bookModalClose) {
-  bookModalClose.addEventListener('click', closeBookModal);
-}
-
-if (bookModal) {
-  bookModal.addEventListener('click', (e) => {
-    if (e.target === bookModal) {
-      closeBookModal();
-    }
-  });
-  
-  // Close on Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && bookModal.classList.contains('active')) {
-      closeBookModal();
-    }
-  });
-}
-
-async function addToCartFromModal(book) {
-  try {
-    if (!isAuthed()) {
-      if (window.Swal && typeof Swal.fire === 'function') {
-        Swal.fire({ icon: 'warning', title: 'Login Required', text: 'Please login to add items to cart.' });
-      } else {
-        alert('Please login to add items to cart.');
-      }
-      closeBookModal();
-      location.href = 'login.html';
-      return;
-    }
-    
-    // Check user role
-    try {
-      const user = await api('/users/me');
-      if (user.role === 'admin' || user.role === 'seller') {
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'error', title: 'Access Denied', text: 'Admin and Seller accounts cannot add items to cart.' });
-        } else {
-          alert('Admin and Seller accounts cannot add items to cart.');
-        }
-        return;
-      }
-    } catch (e) {
-      // Continue if we can't get user info
-    }
-    
-    const maxQuantity = parseInt(book.stock_quantity || 0);
-    
-    if (maxQuantity <= 0) {
-      if (window.Swal && typeof Swal.fire === 'function') {
-        Swal.fire({ icon: 'error', title: 'Out of Stock', text: 'This book is currently out of stock.' });
-      } else {
-        alert('This book is currently out of stock.');
-      }
-      return;
-    }
-    
-    let quantity = 1;
-    
-    if (window.Swal && typeof Swal.fire === 'function') {
-      const result = await Swal.fire({
-        title: 'Add to Cart',
-        html: `
-          <p style="margin-bottom: 1rem; color: rgba(255,255,255,0.9); font-size: 1rem; font-weight: 500;">${book.name || 'Book'}</p>
-          <p style="margin-bottom: 1.5rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">Available Stock: <strong style="color: var(--accent-b);">${maxQuantity}</strong></p>
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-            <button type="button" id="decreaseBtn" style="width: 40px; height: 40px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #fff; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">−</button>
-            <input type="number" id="quantityInput" class="swal2-input" 
-                   value="1" min="1" max="${maxQuantity}" step="1"
-                   style="flex: 1; color: #fff !important; background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.2) !important; border-radius: 8px !important; padding: 0.75rem !important; font-size: 1rem !important; text-align: center !important; -moz-appearance: textfield !important;"
-                   placeholder="Enter quantity">
-            <button type="button" id="increaseBtn" style="width: 40px; height: 40px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #fff; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">+</button>
-          </div>
-        `,
-        showCancelButton: true,
-        confirmButtonText: 'Add to Cart',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#ff6b6b',
-        cancelButtonColor: '#6c757d',
-        allowOutsideClick: false,
-        allowEscapeKey: true,
-        customClass: {
-          popup: 'swal2-dark-theme',
-          title: 'swal2-title-dark',
-          htmlContainer: 'swal2-html-dark',
-          input: 'swal2-input-dark'
-        },
-        didOpen: () => {
-          const input = document.getElementById('quantityInput');
-          const increaseBtn = document.getElementById('increaseBtn');
-          const decreaseBtn = document.getElementById('decreaseBtn');
-          
-          if (input) {
-            // Ensure input is visible and functional
-            input.style.color = '#ffffff';
-            input.style.background = 'rgba(255,255,255,0.1)';
-            input.type = 'number';
-            input.min = '1';
-            input.max = maxQuantity.toString();
-            input.step = '1';
-            
-            // Update quantity function
-            const updateQuantity = (delta) => {
-              const currentVal = parseInt(input.value) || 1;
-              const newVal = currentVal + delta;
-              if (newVal >= 1 && newVal <= maxQuantity) {
-                input.value = newVal.toString();
-                // Update button states
-                if (decreaseBtn) {
-                  decreaseBtn.style.opacity = newVal <= 1 ? '0.5' : '1';
-                  decreaseBtn.style.cursor = newVal <= 1 ? 'not-allowed' : 'pointer';
-                }
-                if (increaseBtn) {
-                  increaseBtn.style.opacity = newVal >= maxQuantity ? '0.5' : '1';
-                  increaseBtn.style.cursor = newVal >= maxQuantity ? 'not-allowed' : 'pointer';
-                }
-              }
-            };
-            
-            // Increase button
-            if (increaseBtn) {
-              increaseBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                updateQuantity(1);
-              });
-              increaseBtn.addEventListener('mouseenter', () => {
-                if (parseInt(input.value || 1) < maxQuantity) {
-                  increaseBtn.style.background = 'rgba(78,205,196,0.3)';
-                }
-              });
-              increaseBtn.addEventListener('mouseleave', () => {
-                increaseBtn.style.background = 'rgba(255,255,255,0.1)';
-              });
-            }
-            
-            // Decrease button
-            if (decreaseBtn) {
-              decreaseBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                updateQuantity(-1);
-              });
-              decreaseBtn.addEventListener('mouseenter', () => {
-                if (parseInt(input.value || 1) > 1) {
-                  decreaseBtn.style.background = 'rgba(78,205,196,0.3)';
-                }
-              });
-              decreaseBtn.addEventListener('mouseleave', () => {
-                decreaseBtn.style.background = 'rgba(255,255,255,0.1)';
-              });
-            }
-            
-            // Input change handler
-            input.addEventListener('input', () => {
-              const val = parseInt(input.value) || 1;
-              if (val < 1) input.value = '1';
-              if (val > maxQuantity) input.value = maxQuantity.toString();
-              
-              // Update button states
-              if (decreaseBtn) {
-                decreaseBtn.style.opacity = val <= 1 ? '0.5' : '1';
-                decreaseBtn.style.cursor = val <= 1 ? 'not-allowed' : 'pointer';
-              }
-              if (increaseBtn) {
-                increaseBtn.style.opacity = val >= maxQuantity ? '0.5' : '1';
-                increaseBtn.style.cursor = val >= maxQuantity ? 'not-allowed' : 'pointer';
-              }
-            });
-            
-            // Keyboard arrows
-            input.addEventListener('keydown', (e) => {
-              if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                updateQuantity(1);
-              } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                updateQuantity(-1);
-              }
-            });
-            
-            // Initial button states
-            if (decreaseBtn) {
-              decreaseBtn.style.opacity = '0.5';
-              decreaseBtn.style.cursor = 'not-allowed';
-            }
-            
-            input.focus();
-            input.select();
-          }
-        },
-        preConfirm: () => {
-          const input = document.getElementById('quantityInput');
-          const val = parseInt(input?.value || 1);
-          if (!val || isNaN(val) || val < 1) {
-            Swal.showValidationMessage('Quantity must be at least 1');
-            return false;
-          }
-          if (val > maxQuantity) {
-            Swal.showValidationMessage(`Quantity cannot exceed available stock (${maxQuantity})`);
-            return false;
-          }
-          return val;
-        }
-      });
-      
-      if (result.isConfirmed && result.value) {
-        quantity = parseInt(result.value);
-      } else {
-        return;
-      }
-    } else {
-      // Fallback if SweetAlert2 is not available
-      const qtyInput = prompt(`Enter quantity for "${book.name || 'Book'}"\nAvailable Stock: ${maxQuantity}`, '1');
-      if (!qtyInput) return;
-      quantity = parseInt(qtyInput);
-      if (!quantity || isNaN(quantity) || quantity < 1 || quantity > maxQuantity) {
-        alert(`Please enter a quantity between 1 and ${maxQuantity}`);
-        return;
-      }
-    }
-    
-    // Ensure book.id exists and is a number
-    if (!book.id) {
-      console.error('Book ID is missing:', book);
-      if (window.Swal && typeof Swal.fire === 'function') {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Book information is incomplete. Please try again.' });
-      } else {
-        alert('Book information is incomplete. Please try again.');
-      }
-      return;
-    }
-    
-    // Add to cart
-    try {
-      const response = await api('/cart', {
-        method: 'POST',
-        data: {
-          book_id: parseInt(book.id),
-          quantity: quantity
-        }
-      });
-      
-      console.log('Add to cart response:', response);
-    
-      if (window.Swal && typeof Swal.fire === 'function') {
-        Swal.fire({
-          icon: 'success',
-          title: 'Added to Cart',
-          text: `${quantity} ${quantity === 1 ? 'item' : 'items'} added to cart successfully!`,
-          timer: 2000,
-          showConfirmButton: false
-        });
-      } else {
-        alert(`${quantity} ${quantity === 1 ? 'item' : 'items'} added to cart successfully!`);
-      }
-      
-      closeBookModal();
-      
-      // Update cart badge
-      if (typeof updateCartBadge === 'function') {
-        updateCartBadge();
-      }
-    } catch (apiError) {
-      console.error('Add to cart API error:', apiError);
-      throw apiError; // Re-throw to be caught by outer catch
-    }
-  } catch (err) {
-    console.error('Add to cart error:', err);
-    let message = 'Failed to add to cart';
-    
-    if (err && err.message) {
-      message = err.message;
-    } else if (err && typeof err === 'string') {
-      message = err;
-    } else if (err && err.errors) {
-      // Handle validation errors
-      const errorMessages = Object.values(err.errors).flat();
-      message = errorMessages.join(', ') || message;
-    }
-    
-    if (window.Swal && typeof Swal.fire === 'function') {
-      Swal.fire({ 
-        icon: 'error', 
-        title: 'Error', 
-        text: message 
-      });
-    } else {
-      alert(message);
-    }
-  }
-}
-
-async function deleteBook(bookId) {
-  if (!window.Swal || typeof Swal.fire !== 'function') {
-    if (confirm('Are you sure you want to delete this book?')) {
-      try {
-        await api(`/books/${bookId}`, { method: 'DELETE' });
-        loadBooks(search?.value || '');
-      } catch (err) {
-        alert(err.message || 'Failed to delete book');
-      }
-    }
-    return;
-  }
-  
-  const result = await Swal.fire({
-    title: 'Delete Book?',
-    text: 'This action cannot be undone.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#ff6b6b',
-    cancelButtonColor: '#6c757d',
-    confirmButtonText: 'Yes, delete it',
-    cancelButtonText: 'Cancel'
-  });
-  
-  if (result.isConfirmed) {
-    try {
-      await api(`/books/${bookId}`, { method: 'DELETE' });
-      Swal.fire({ icon: 'success', title: 'Deleted', text: 'Book deleted successfully.', timer: 2000 });
-      loadBooks(search?.value || '');
-    } catch (err) {
-      Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to delete book' });
-    }
-  }
+  const tr = document.createElement('tr');
+  // Store book data in the row element for easy access
+  tr.dataset.bookId = row.id;
+  tr.dataset.stockQuantity = row.stock_quantity || 0;
+  tr.dataset.bookName = row.name || '';
+  tr.innerHTML = `
+    <td data-label="ID"><span class="cell-value">${row.id}</span></td>
+    <td data-label="ISBN"><span class="cell-value">${row.ISBN}</span></td>
+    <td data-label="Name"><span class="cell-value">${row.name}</span></td>
+    <td data-label="Description"><span class="cell-value">${row.description}</span></td>
+    <td data-label="Price"><span class="cell-value">₱${parseFloat(row.price || 0).toFixed(2)}</span></td>
+    <td data-label="Stock"><span class="cell-value">${row.stock_quantity || 0}</span></td>
+    <td data-label="Image">
+      <img src="${imgUrl}" alt="book image" width="32" height="32" class="book-image"
+           onerror="if(!this.dataset.retry) { this.dataset.retry='1'; console.warn('Image load error for book ${row.id}, retrying:', this.src); setTimeout(() => { const baseUrl = this.src.split('?')[0]; this.src = baseUrl + '?retry=' + Date.now(); }, 1000); } else { console.error('Image failed after retry for book ${row.id}:', this.src); this.onerror=null; if(this.src !== '${defaultImg}') this.src='${defaultImg}'; }"
+           loading="lazy"
+           onload="this.dataset.loaded='true'; console.log('Book ${row.id} image loaded:', this.src);">
+    </td>
+    <td data-label="Actions">${actionsHtml}</td>
+  `;
+  tblBody.appendChild(tr);
 }
 
 async function loadBooks(q = '') {
   const loadingIndicator = document.getElementById('loadingIndicator');
+  const tableContainer = document.querySelector('.table-container');
+  const gridContainer = document.querySelector('.books-grid-container');
   
   // Show loading indicator BEFORE starting fetch
   if (loadingIndicator) loadingIndicator.style.display = 'flex';
-  if (booksGridContainer) booksGridContainer.style.display = 'none';
+  if (tableContainer) tableContainer.style.display = 'none';
+  if (gridContainer) gridContainer.style.display = 'none';
   
   try {
     // Get user role to determine UI
@@ -1008,43 +683,36 @@ async function loadBooks(q = '') {
     
     const response = await api('/books' + (q ? `?q=${encodeURIComponent(q)}` : ''));
     const rows = response.books || response; // Handle both response formats
+    
+    // Clear existing content
     if (booksGrid) {
       booksGrid.innerHTML = '';
-      if (Array.isArray(rows) && rows.length > 0) {
+    }
+    if (tblBody) {
+      tblBody.innerHTML = '';
+    }
+    
+    // Render books in grid or table format
+    if (Array.isArray(rows)) {
+      if (booksGrid) {
+        // Use grid layout
         rows.forEach(renderBookCard);
-      } else {
-        // Show empty state message
-        booksGrid.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: rgba(255,255,255,0.6);">
-            <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">No books found</p>
-            <p style="font-size: 0.9rem;">${q ? 'Try a different search term.' : 'Be the first to add a book!'}</p>
-          </div>
-        `;
+      } else if (tblBody) {
+        // Fallback to table layout
+        rows.forEach(renderRow);
       }
     }
   } catch (e) {
-    console.error('Error loading books:', e);
-    const errorMessage = e.message || 'Please login first.';
-    if (msg) msg.textContent = errorMessage;
-    if (booksGrid) {
-      booksGrid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: rgba(255,255,255,0.6);">
-          <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">Error loading books</p>
-          <p style="font-size: 0.9rem;">${errorMessage}</p>
-          <p style="font-size: 0.85rem; margin-top: 0.5rem; color: rgba(255,255,255,0.4);">Please check your connection and try again.</p>
-        </div>
-      `;
-    }
+    if (msg) msg.textContent = 'Please login first.';
   } finally {
-    // Always hide loading indicator and show grid container
+    // Hide loading indicator and show grid/table
     if (loadingIndicator) loadingIndicator.style.display = 'none';
-    if (booksGridContainer) {
-      booksGridContainer.style.display = 'block';
-    }
+    if (tableContainer) tableContainer.style.display = 'block';
+    if (gridContainer) gridContainer.style.display = 'block';
   }
 }
 
-if (addForm && booksGrid) {
+if (addForm && (tblBody || booksGrid)) {
   // CREATE with optional image
   addForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1070,13 +738,178 @@ if (addForm && booksGrid) {
     }
   });
 
-  // Note: Grid card actions are handled in renderBookCard and modal
-  // Edit and delete actions are handled in the modal for sellers
-}
+  // Grid/Table actions - handle clicks on action buttons
+  const container = booksGrid || tblBody;
+  if (container) {
+    container.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const id = btn.dataset.id;
 
-// Initialize books page
-if (search) search.addEventListener('input', () => loadBooks(search.value));
-loadBooks();
+    if (btn.dataset.action === 'add-cart') {
+      try {
+        // Check if user is logged in and is a regular user (not admin/seller)
+        if (!isAuthed()) {
+          if (window.Swal && typeof Swal.fire === 'function') {
+            Swal.fire({ icon: 'warning', title: 'Login Required', text: 'Please login to add items to cart.' });
+          } else {
+            alert('Please login to add items to cart.');
+          }
+          location.href = 'login.html';
+          return;
+        }
+        
+        // Check user role
+        try {
+          const user = await api('/users/me');
+          if (user.role === 'admin' || user.role === 'seller') {
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ icon: 'error', title: 'Access Denied', text: 'Admin and Seller accounts cannot add items to cart.' });
+            } else {
+              alert('Admin and Seller accounts cannot add items to cart.');
+            }
+            return;
+          }
+        } catch (e) {
+          // If we can't get user info, still try to add to cart (backend will handle it)
+        }
+        
+        // Get book data from the row
+        const row = btn.closest('tr');
+        const stockQuantity = parseInt(row.dataset.stockQuantity || 0);
+        const bookName = row.dataset.bookName || 'Book';
+        const maxQuantity = stockQuantity;
+        
+        // Show quantity input dialog
+        let quantity = 1;
+        if (window.Swal && typeof Swal.fire === 'function') {
+          const result = await Swal.fire({
+            title: 'Add to Cart',
+            html: `
+              <p style="margin-bottom: 1rem; color: rgba(255,255,255,0.8);">${bookName}</p>
+              <p style="margin-bottom: 1rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">Available Stock: ${maxQuantity}</p>
+              <input type="number" id="quantityInput" class="swal2-input" 
+                     value="1" min="1" max="${maxQuantity}" 
+                     style="color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);"
+                     placeholder="Enter quantity">
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Add to Cart',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#ff6b6b',
+            cancelButtonColor: '#6c757d',
+            didOpen: () => {
+              const input = document.getElementById('quantityInput');
+              if (input) {
+                input.focus();
+                input.select();
+              }
+            },
+            preConfirm: () => {
+              const input = document.getElementById('quantityInput');
+              const qty = parseInt(input.value);
+              if (!qty || qty < 1) {
+                Swal.showValidationMessage('Quantity must be at least 1');
+                return false;
+              }
+              if (qty > maxQuantity) {
+                Swal.showValidationMessage(`Quantity cannot exceed available stock (${maxQuantity})`);
+                return false;
+              }
+              return qty;
+            }
+          });
+          
+          if (result.isConfirmed && result.value) {
+            quantity = result.value;
+          } else {
+            return; // User cancelled
+          }
+        } else {
+          // Fallback to prompt if SweetAlert2 is not available
+          const qtyInput = prompt(`Enter quantity for "${bookName}"\nAvailable Stock: ${maxQuantity}`, '1');
+          if (!qtyInput) return; // User cancelled
+          quantity = parseInt(qtyInput);
+          if (!quantity || quantity < 1) {
+            alert('Quantity must be at least 1');
+            return;
+          }
+          if (quantity > maxQuantity) {
+            alert(`Quantity cannot exceed available stock (${maxQuantity})`);
+            return;
+          }
+        }
+        
+        // Add to cart with selected quantity
+        const response = await api('/cart', { method: 'POST', data: { book_id: id, quantity: quantity } });
+        console.log('Add to cart response:', response);
+        
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ 
+            icon: 'success', 
+            title: 'Added to Cart', 
+            text: `${quantity} ${quantity === 1 ? 'item' : 'items'} added to cart successfully!` 
+          });
+        }
+        if (typeof updateCartBadge === 'function') {
+          await updateCartBadge();
+        }
+      } catch (err) {
+        console.error('Add to cart error:', err);
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Add to Cart Failed', text: message });
+        } else if (msg) {
+          msg.textContent = message;
+        } else {
+          alert('Failed to add to cart: ' + message);
+        }
+      }
+      return;
+    }
+
+    if (btn.dataset.action === 'edit') {
+      location.href = `edit.html?id=${encodeURIComponent(id)}`;
+      return;
+    }
+
+    if (btn.dataset.action === 'delete') {
+      // Use SweetAlert2 for confirmation if available, otherwise fallback to confirm()
+      const doDelete = async () => {
+        try {
+          await api('/books/' + id, { method: 'DELETE' });
+          loadBooks(search?.value || '');
+        } catch (err) {
+          if (window.Swal && typeof Swal.fire === 'function') {
+            Swal.fire({ icon: 'error', title: 'Delete failed', text: (err && err.message) ? err.message : JSON.stringify(err, null, 2) });
+          } else if (msg) {
+            msg.textContent = JSON.stringify(err, null, 2);
+          }
+        }
+      };
+
+      if (window.Swal && typeof Swal.fire === 'function') {
+        Swal.fire({
+          title: `Delete book #${id}?`,
+          text: 'This action cannot be undone.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Delete',
+          confirmButtonColor: '#e3342f',
+          cancelButtonText: 'Cancel'
+        }).then(res => { if (res.isConfirmed) doDelete(); });
+      } else {
+        if (!confirm('Delete book #' + id + '?')) return;
+        await doDelete();
+      }
+      return;
+    }
+    });
+  }
+
+  if (search) search.addEventListener('input', () => loadBooks(search.value));
+  loadBooks();
+}
 
 // =====================
 // Edit page (edit.html)
@@ -1092,6 +925,11 @@ async function initEdit() {
   const nameInput = document.getElementById('name');
   const descInput = document.getElementById('description');
   const preview = document.getElementById('preview');
+
+  // Show loading overlay
+  if (typeof showLoading === 'function') {
+    showLoading(true);
+  }
 
   try {
     const book = await api('/books/' + id);
@@ -1126,10 +964,15 @@ async function initEdit() {
     console.log('Book data:', { id: book.id, image_path: book.image_path, updated_at: book.updated_at });
     console.log('Image path from API:', book.image_path);
     console.log('Processed image filename:', imagePath);
-    console.log('Constructed image URL:', imgUrl);
-    console.log('UPLOADS_URL:', uploadsUrl);
-    
-    if (preview) {
+      console.log('Constructed image URL:', imgUrl);
+      console.log('UPLOADS_URL:', uploadsUrl);
+      
+      // Hide loading overlay after data is loaded
+      if (typeof showLoading === 'function') {
+        showLoading(false);
+      }
+      
+      if (preview) {
       // Set up error handler with retry logic
       preview.onerror = function(e) {
         if (!this.dataset.retry) {
@@ -1163,6 +1006,10 @@ async function initEdit() {
   } catch (e) {
     console.error('Failed to load book:', e);
     msgBox.textContent = 'Failed to load book: ' + (e.message || JSON.stringify(e));
+    // Hide loading overlay on error
+    if (typeof showLoading === 'function') {
+      showLoading(false);
+    }
     return;
   }
 
