@@ -1,23 +1,50 @@
 // Backend API Configuration
 // 
-// PRODUCTION (GitHub Pages): Connected to Hostinger backend
-// Frontend: https://kianzhar.github.io/bookslaravel/
-// Backend: https://ccs4thyear.com/Books/Kian_Laravel/
+// ENVIRONMENT DETECTION: Automatically switches between local and production
+// 
+// LOCAL DEVELOPMENT: Uses localhost:8000
+// PRODUCTION (GitHub Pages): Uses ccs4thyear.com
 
-// Production backend URL
-const SERVER_BASE_URL = 'https://ccs4thyear.com/Books/Kian_Laravel';
+// Detect if running on GitHub Pages or localhost
+const isProduction = window.location.hostname === 'kianzhar.github.io';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-// For local development, uncomment these lines and comment out SERVER_BASE_URL above:
-// const SERVER_IP = 'localhost';
-// const SERVER_PORT = '8000';
-// const SERVER_BASE_URL = `http://${SERVER_IP}:${SERVER_PORT}`;
+let SERVER_BASE_URL;
+let SERVER_IP;
+let SERVER_PORT;
+
+if (isProduction) {
+  // PRODUCTION Configuration (GitHub Pages)
+  SERVER_IP = 'ccs4thyear.com';
+  SERVER_PORT = '';
+  SERVER_BASE_URL = `https://${SERVER_IP}/Books/Kian_laravel`;
+  console.log('🚀 Running in PRODUCTION mode');
+} else {
+  // LOCAL DEVELOPMENT Configuration
+  SERVER_IP = 'localhost';
+  SERVER_PORT = '8000';
+  SERVER_BASE_URL = `http://${SERVER_IP}:${SERVER_PORT}`;
+  console.log('💻 Running in DEVELOPMENT mode');
+}
 
 window.CONFIG = {
+  SERVER_IP: SERVER_IP,
+  SERVER_PORT: SERVER_PORT,
   BASE_URL: SERVER_BASE_URL + '/',
   API_URL: `${SERVER_BASE_URL}/api`,
-  UPLOADS_URL: `${SERVER_BASE_URL}/uploads/`
+  UPLOADS_URL: `${SERVER_BASE_URL}/uploads/`,
+  
+  // Environment info
+  ENVIRONMENT: isProduction ? 'production' : 'development',
+  WITH_CREDENTIALS: true,
+  DEBUG: !isProduction
 };
 
+console.log('📡 API Configuration:');
+console.log('  - Base URL:', window.CONFIG.BASE_URL);
+console.log('  - API URL:', window.CONFIG.API_URL);
+console.log('  - Uploads URL:', window.CONFIG.UPLOADS_URL);
+console.log('  - Environment:', window.CONFIG.ENVIRONMENT);
 
 
 
