@@ -416,6 +416,42 @@
       setupNumericInputs();
     });
     
+    // Make brand logo non-clickable when logged in
+    function updateBrandLogo() {
+      const brandLogo = document.querySelector('.brand-logo');
+      if (brandLogo && typeof isAuthed === 'function') {
+        if (isAuthed()) {
+          // User is logged in - make it non-clickable
+          if (brandLogo.tagName === 'A') {
+            const text = brandLogo.textContent;
+            const parent = brandLogo.parentNode;
+            const span = document.createElement('span');
+            span.className = brandLogo.className;
+            span.textContent = text;
+            span.style.cursor = 'default';
+            span.style.textDecoration = 'none';
+            parent.replaceChild(span, brandLogo);
+          }
+        } else {
+          // User is not logged in - make it clickable
+          if (brandLogo.tagName !== 'A') {
+            const text = brandLogo.textContent;
+            const parent = brandLogo.parentNode;
+            const link = document.createElement('a');
+            link.className = brandLogo.className;
+            link.href = 'index.html';
+            link.textContent = text;
+            parent.replaceChild(link, brandLogo);
+          }
+        }
+      }
+    }
+    
+    // Update brand logo on page load
+    if (typeof isAuthed === 'function') {
+      updateBrandLogo();
+    }
+    
     // Theme interactivity: cursor glows and simple loading overlay helper
     (function () {
       const glow = document.getElementById('cursorGlow');
