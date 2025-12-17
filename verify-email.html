@@ -703,6 +703,13 @@
         return;
       }
 
+      // Ensure CONFIG is loaded
+      if (!window.CONFIG || !window.CONFIG.API_URL) {
+        console.error('CONFIG not loaded!');
+        verifyMsg.textContent = 'Configuration error. Please refresh the page.';
+        return;
+      }
+
       $.ajax({
         method: 'POST',
         url: window.CONFIG.API_URL + '/auth/verify-email',
@@ -738,6 +745,13 @@
       if (resendDisabled) return;
 
       const verifyMsg = document.getElementById('verifyMsg');
+
+      // Ensure CONFIG is loaded
+      if (!window.CONFIG || !window.CONFIG.API_URL) {
+        console.error('CONFIG not loaded!');
+        verifyMsg.textContent = 'Configuration error. Please refresh the page.';
+        return;
+      }
 
       $.ajax({
         method: 'POST',
