@@ -705,7 +705,7 @@
 
       $.ajax({
         method: 'POST',
-        url: 'http://localhost:8000/api/auth/verify-email',
+        url: window.CONFIG.API_URL + '/auth/verify-email',
         contentType: 'application/json',
         data: JSON.stringify({
           email: userEmail,
@@ -741,7 +741,7 @@
 
       $.ajax({
         method: 'POST',
-        url: 'http://localhost:8000/api/auth/resend-otp',
+        url: window.CONFIG.API_URL + '/auth/resend-otp',
         contentType: 'application/json',
         data: JSON.stringify({
           email: userEmail
