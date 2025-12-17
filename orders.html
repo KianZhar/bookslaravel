@@ -238,14 +238,9 @@
           console.warn('Could not get user info:', e);
         }
         
-        // Build API URL with sort parameters
-        // Sort by status if a specific status is selected, otherwise sort by date
-        let sortParams;
-        if (currentSortBy === 'all') {
-          sortParams = `?sort_by=created_at&sort_order=${currentSortOrder}`;
-        } else {
-          sortParams = `?sort_by=status&sort_order=${currentSortOrder}&status_filter=${currentSortBy}`;
-        }
+        // Build API URL - always fetch all orders, we'll sort on frontend
+        // This ensures proper sorting by status regardless of backend support
+        const sortParams = `?sort_by=created_at&sort_order=desc`;
         const response = await api('/orders' + sortParams);
         console.log('Orders API response:', response);
         console.log('Response type:', typeof response);
@@ -263,18 +258,52 @@
           orders = [];
         }
         
-        // Sort orders by status
+        // Sort orders by status - always do frontend sorting for proper status grouping
         if (orders.length > 0) {
           if (currentSortBy === 'all') {
-            // Sort all orders by date
+            // Sort all orders: actionable orders first (grouped by status), then non-actionable
+            const statusPriority = {
+              'pending': 1,      // Has actions (Cancel, Approve/Decline)
+              'confirmed': 2,    // Has actions (Mark as Shipped)
+              'shipped': 3,      // Has actions (Mark as Received)
+              'received': 4,    // Has actions (Mark as Complete)
+              'completed': 10,  // No actions
+              'canceled': 11,   // No actions
+              'declined': 12    // No actions
+            };
+            
             orders.sort((a, b) => {
-              const dateA = new Date(a.created_at);
-              const dateB = new Date(b.created_at);
+              const aStatus = (a.status || '').toLowerCase();
+              const bStatus = (b.status || '').toLowerCase();
+              
+              const aPriority = statusPriority[aStatus] || 99;
+              const bPriority = statusPriority[bStatus] || 99;
+              
+              // First, sort by priority (actionable first)
+              if (aPriority !== bPriority) {
+                return aPriority - bPriority;
+              }
+              
+              // Same priority (same status group), sort by date
+              const dateA = new Date(a.created_at || 0);
+              const dateB = new Date(b.created_at || 0);
               return currentSortOrder === 'desc' ? dateB - dateA : dateA - dateB;
             });
           } else {
             // Sort orders: selected status first, then others, all sorted by date within groups
             const targetStatus = currentSortBy.toLowerCase();
+            
+            // Define status priority order for better sorting
+            const statusPriority = {
+              'pending': 1,
+              'confirmed': 2,
+              'shipped': 3,
+              'received': 4,
+              'completed': 5,
+              'canceled': 6,
+              'declined': 7
+            };
+            
             orders.sort((a, b) => {
               const aStatus = (a.status || '').toLowerCase();
               const bStatus = (b.status || '').toLowerCase();
@@ -282,13 +311,28 @@
               const aMatches = aStatus === targetStatus;
               const bMatches = bStatus === targetStatus;
               
-              // If one matches and the other doesn't, matching one comes first
+              // If one matches target status and the other doesn't, matching one comes first
               if (aMatches && !bMatches) return -1;
               if (!aMatches && bMatches) return 1;
               
-              // If both match or both don't match, sort by date
-              const dateA = new Date(a.created_at);
-              const dateB = new Date(b.created_at);
+              // If both match target status, sort by date
+              if (aMatches && bMatches) {
+                const dateA = new Date(a.created_at || 0);
+                const dateB = new Date(b.created_at || 0);
+                return currentSortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+              }
+              
+              // If neither matches, sort by status priority, then by date
+              const aPriority = statusPriority[aStatus] || 99;
+              const bPriority = statusPriority[bStatus] || 99;
+              
+              if (aPriority !== bPriority) {
+                return aPriority - bPriority;
+              }
+              
+              // Same priority, sort by date
+              const dateA = new Date(a.created_at || 0);
+              const dateB = new Date(b.created_at || 0);
               return currentSortOrder === 'desc' ? dateB - dateA : dateA - dateB;
             });
           }
