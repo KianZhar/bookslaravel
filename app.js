@@ -820,6 +820,29 @@ if (addForm && (tblBody || booksGrid)) {
               if (input) {
                 input.focus();
                 input.select();
+                // Add numeric-only validation
+                input.addEventListener('keypress', function(e) {
+                  if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+                      (e.keyCode === 65 && e.ctrlKey === true) ||
+                      (e.keyCode === 67 && e.ctrlKey === true) ||
+                      (e.keyCode === 86 && e.ctrlKey === true) ||
+                      (e.keyCode === 88 && e.ctrlKey === true) ||
+                      (e.keyCode >= 35 && e.keyCode <= 39)) {
+                    return;
+                  }
+                  if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                    e.preventDefault();
+                    Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Please enter only numbers for quantity.', timer: 2000, showConfirmButton: false });
+                  }
+                });
+                input.addEventListener('input', function(e) {
+                  const value = this.value;
+                  const numericValue = value.replace(/[^0-9]/g, '');
+                  if (value !== numericValue) {
+                    this.value = numericValue;
+                    Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Only numbers are allowed. Letters have been removed.', timer: 2000, showConfirmButton: false });
+                  }
+                });
               }
             },
             preConfirm: () => {
