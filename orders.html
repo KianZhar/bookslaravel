@@ -156,7 +156,7 @@
     <!-- Sorting Controls -->
     <div class="sort-controls">
       <div class="sort-group">
-        <label class="sort-label">Filter by Status:</label>
+        <label class="sort-label">Sort by:</label>
         <select id="sortBy" class="sort-select">
           <option value="all" selected>All Orders</option>
           <option value="pending">Pending</option>
@@ -203,7 +203,7 @@
     let orders = [];
     // currentUserRole is declared in app.js, so we just update it
     let localCurrentUserId = null;
-    let currentSortBy = 'all'; // Changed to 'all' for filtering by status
+    let currentSortBy = 'all'; // Sort by status option
     let currentSortOrder = 'desc';
 
     async function loadOrders() {
@@ -239,10 +239,12 @@
         }
         
         // Build API URL with sort parameters
-        // If filtering by status, add status filter; otherwise just sort by date
-        let sortParams = `?sort_by=created_at&sort_order=${currentSortOrder}`;
-        if (currentSortBy !== 'all') {
-          sortParams += `&status=${currentSortBy}`;
+        // Sort by status if a specific status is selected, otherwise sort by date
+        let sortParams;
+        if (currentSortBy === 'all') {
+          sortParams = `?sort_by=created_at&sort_order=${currentSortOrder}`;
+        } else {
+          sortParams = `?sort_by=status&sort_order=${currentSortOrder}&status_filter=${currentSortBy}`;
         }
         const response = await api('/orders' + sortParams);
         console.log('Orders API response:', response);
@@ -261,9 +263,35 @@
           orders = [];
         }
         
-        // Filter by status on frontend if backend doesn't support it
-        if (currentSortBy !== 'all' && orders.length > 0) {
-          orders = orders.filter(order => order.status && order.status.toLowerCase() === currentSortBy.toLowerCase());
+        // Sort orders by status
+        if (orders.length > 0) {
+          if (currentSortBy === 'all') {
+            // Sort all orders by date
+            orders.sort((a, b) => {
+              const dateA = new Date(a.created_at);
+              const dateB = new Date(b.created_at);
+              return currentSortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+            });
+          } else {
+            // Sort orders: selected status first, then others, all sorted by date within groups
+            const targetStatus = currentSortBy.toLowerCase();
+            orders.sort((a, b) => {
+              const aStatus = (a.status || '').toLowerCase();
+              const bStatus = (b.status || '').toLowerCase();
+              
+              const aMatches = aStatus === targetStatus;
+              const bMatches = bStatus === targetStatus;
+              
+              // If one matches and the other doesn't, matching one comes first
+              if (aMatches && !bMatches) return -1;
+              if (!aMatches && bMatches) return 1;
+              
+              // If both match or both don't match, sort by date
+              const dateA = new Date(a.created_at);
+              const dateB = new Date(b.created_at);
+              return currentSortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+            });
+          }
         }
         
         console.log('Orders after parsing:', orders);
