@@ -387,6 +387,68 @@
       // Setup select all functionality
       setupSelectAll();
       updateSelectedItems();
+      
+      // Add numeric-only validation to quantity inputs
+      setupNumericInputs();
+    }
+    
+    // Function to setup numeric-only validation for inputs
+    function setupNumericInputs() {
+      const quantityInputs = document.querySelectorAll('.quantity-input');
+      quantityInputs.forEach(input => {
+        // Prevent non-numeric input
+        input.addEventListener('keypress', function(e) {
+          // Allow: backspace, delete, tab, escape, enter, decimal point, and numbers
+          if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+              // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+              (e.keyCode === 65 && e.ctrlKey === true) ||
+              (e.keyCode === 67 && e.ctrlKey === true) ||
+              (e.keyCode === 86 && e.ctrlKey === true) ||
+              (e.keyCode === 88 && e.ctrlKey === true) ||
+              // Allow: home, end, left, right
+              (e.keyCode >= 35 && e.keyCode <= 39)) {
+            return;
+          }
+          // Ensure that it is a number and stop the keypress
+          if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+            // Show warning
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ 
+                icon: 'warning', 
+                title: 'Numbers Only', 
+                text: 'Please enter only numbers for quantity.',
+                timer: 2000,
+                showConfirmButton: false
+              });
+            } else {
+              alert('Please enter only numbers for quantity.');
+            }
+          }
+        });
+        
+        // Validate on input (for paste events)
+        input.addEventListener('input', function(e) {
+          const value = this.value;
+          // Remove any non-numeric characters
+          const numericValue = value.replace(/[^0-9]/g, '');
+          if (value !== numericValue) {
+            this.value = numericValue;
+            // Show warning
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ 
+                icon: 'warning', 
+                title: 'Numbers Only', 
+                text: 'Only numbers are allowed. Letters have been removed.',
+                timer: 2000,
+                showConfirmButton: false
+              });
+            } else {
+              alert('Only numbers are allowed. Letters have been removed.');
+            }
+          }
+        });
+      });
     }
     
     function setupSelectAll() {
