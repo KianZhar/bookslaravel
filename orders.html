@@ -203,6 +203,7 @@
     let orders = [];
     // currentUserRole is declared in app.js, so we just update it
     let localCurrentUserId = null;
+    let localCurrentUserRole = 'user'; // Store user role locally
     let currentSortBy = 'all'; // Sort by status option
     let currentSortOrder = 'desc';
 
@@ -223,6 +224,7 @@
             currentUserRole = user.role || 'user';
           }
           localCurrentUserId = user.id;
+          localCurrentUserRole = user.role || 'user'; // Store role locally
           
           // Update page title and subtitle based on role
           const pageTitle = document.getElementById('pageTitle');
@@ -238,8 +240,9 @@
           console.warn('Could not get user info:', e);
         }
         
-        // Build API URL - always fetch all orders, we'll sort on frontend
-        // This ensures proper sorting by status regardless of backend support
+        // Build API URL - for sellers/admins, fetch all orders (no filtering by seller)
+        // For regular users, backend will filter by user_id
+        // This ensures all sellers see the same orders
         const sortParams = `?sort_by=created_at&sort_order=desc`;
         const response = await api('/orders' + sortParams);
         console.log('Orders API response:', response);
@@ -350,11 +353,14 @@
         }
         
         if (!orders || orders.length === 0) {
+          // Only show "Start Shopping" for regular users, not for sellers/admins
+          const isSellerOrAdmin = localCurrentUserRole === 'seller' || localCurrentUserRole === 'admin';
+          const startShoppingBtn = isSellerOrAdmin ? '' : '<a href="books.html" class="nav-link btn-primary" style="display:inline-block; margin-top:1rem;">Start Shopping</a>';
           document.getElementById('ordersContainer').innerHTML = `
             <div class="empty-orders">
               <div class="empty-orders-icon">📦</div>
               <p>No orders yet</p>
-              <a href="books.html" class="nav-link btn-primary" style="display:inline-block; margin-top:1rem;">Start Shopping</a>
+              ${startShoppingBtn}
             </div>
           `;
           return;
@@ -394,11 +400,14 @@
       console.log('Number of orders:', orders.length);
       
       if (!orders || orders.length === 0) {
+        // Only show "Start Shopping" for regular users, not for sellers/admins
+        const isSellerOrAdmin = localCurrentUserRole === 'seller' || localCurrentUserRole === 'admin';
+        const startShoppingBtn = isSellerOrAdmin ? '' : '<a href="books.html" class="nav-link btn-primary" style="display:inline-block; margin-top:1rem;">Start Shopping</a>';
         container.innerHTML = `
           <div class="empty-orders">
             <div class="empty-orders-icon">📦</div>
             <p>No orders yet</p>
-            <a href="books.html" class="nav-link btn-primary" style="display:inline-block; margin-top:1rem;">Start Shopping</a>
+            ${startShoppingBtn}
           </div>
         `;
         return;
