@@ -226,6 +226,14 @@
           localCurrentUserId = user.id;
           localCurrentUserRole = user.role || 'user'; // Store role locally
           
+          // Debug logging for role detection
+          console.log('User info from /users/me:', {
+            id: user.id,
+            role: user.role,
+            name: user.name,
+            localCurrentUserRole: localCurrentUserRole
+          });
+          
           // Update page title and subtitle based on role
           const pageTitle = document.getElementById('pageTitle');
           const pageSubtitle = document.getElementById('pageSubtitle');
