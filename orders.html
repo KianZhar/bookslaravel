@@ -103,9 +103,22 @@
       .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
       .hamburger.active span:nth-child(2) { opacity: 0; }
       .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
-      .nav-links { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 5rem 2rem 2rem; gap: 0.5rem; transition: right 0.3s ease; border-left: 1px solid rgba(255,255,255,0.1); }
+      .nav-links { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 5rem 2rem 2rem; gap: 0.5rem; transition: right 0.3s ease; border-left: 1px solid rgba(255,255,255,0.1); z-index: 999; }
       .nav-links.active { right: 0; }
       .nav-link { width: 100%; text-align: left; padding: 1rem; border-radius: 8px; }
+      
+      /* Overlay for mobile menu */
+      .nav-overlay { 
+        display: none;
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0,0,0,0.7); 
+        z-index: 998; 
+      }
+      .nav-overlay.active { display: block; }
     }
   </style>
 </head>
@@ -148,6 +161,7 @@
       </div>
     </div>
   </nav>
+  <div class="nav-overlay" id="navOverlay"></div>
 
   <div class="main-content">
     <h1 class="page-title" id="pageTitle">My Orders</h1>
@@ -191,14 +205,33 @@
   <script src="app.js"></script>
   <script>
     // Mobile menu toggle
-    const hamburger = document.getElementById('hamburger');
-    const navLinks = document.getElementById('navLinks');
-    if (hamburger) {
-      hamburger.addEventListener('click', () => {
+    // Mobile menu toggle
+    (function() {
+      const hamburger = document.getElementById('hamburger');
+      const navLinks = document.getElementById('navLinks');
+      const navOverlay = document.getElementById('navOverlay');
+      
+      if (!hamburger || !navLinks || !navOverlay) return;
+      
+      function toggleMenu() {
         hamburger.classList.toggle('active');
         navLinks.classList.toggle('active');
+        navOverlay.classList.toggle('active');
+        document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+      }
+      
+      hamburger.addEventListener('click', toggleMenu);
+      navOverlay.addEventListener('click', toggleMenu);
+      
+      // Close menu when clicking on a link
+      navLinks.querySelectorAll('.nav-link, a').forEach(link => {
+        link.addEventListener('click', () => {
+          if (navLinks.classList.contains('active')) {
+            toggleMenu();
+          }
+        });
       });
-    }
+    })();
 
     let orders = [];
     // currentUserRole is declared in app.js, so we just update it
