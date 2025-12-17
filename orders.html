@@ -243,7 +243,14 @@
         // Build API URL - for sellers/admins, fetch all orders (no filtering by seller)
         // For regular users, backend will filter by user_id
         // This ensures all sellers see the same orders
-        const sortParams = `?sort_by=created_at&sort_order=desc`;
+        const isSellerOrAdmin = localCurrentUserRole === 'seller' || localCurrentUserRole === 'admin';
+        let sortParams = `?sort_by=created_at&sort_order=desc`;
+        // Add parameter to fetch all orders for sellers/admins
+        if (isSellerOrAdmin) {
+          sortParams += '&all=true';
+        }
+        console.log('Fetching orders - User role:', localCurrentUserRole, 'Is seller/admin:', isSellerOrAdmin);
+        console.log('API URL:', '/orders' + sortParams);
         const response = await api('/orders' + sortParams);
         console.log('Orders API response:', response);
         console.log('Response type:', typeof response);
