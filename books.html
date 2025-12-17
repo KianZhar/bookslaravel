@@ -332,6 +332,90 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="app.js"></script>
   <script>
+    // Function to setup numeric-only validation for inputs
+    function setupNumericInputs() {
+      // Setup for price fields (allow decimals)
+      const priceInputs = document.querySelectorAll('input[name="price"], input#price');
+      priceInputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+          // Allow: backspace, delete, tab, escape, enter, decimal point, and numbers
+          if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+              (e.keyCode === 65 && e.ctrlKey === true) || // Ctrl+A
+              (e.keyCode === 67 && e.ctrlKey === true) || // Ctrl+C
+              (e.keyCode === 86 && e.ctrlKey === true) || // Ctrl+V
+              (e.keyCode === 88 && e.ctrlKey === true) || // Ctrl+X
+              (e.keyCode >= 35 && e.keyCode <= 39)) { // Home, End, Left, Right
+            return;
+          }
+          // Allow numbers and decimal point (only one)
+          if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            // Allow decimal point if not already present
+            if ((e.keyCode === 190 || e.keyCode === 110) && this.value.indexOf('.') === -1) {
+              return;
+            }
+            e.preventDefault();
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Please enter only numbers for price.', timer: 2000, showConfirmButton: false });
+            } else {
+              alert('Please enter only numbers for price.');
+            }
+          }
+        });
+        input.addEventListener('input', function(e) {
+          const value = this.value;
+          const numericValue = value.replace(/[^0-9.]/g, '').replace(/\.(?=.*\.)/g, ''); // Allow only one decimal
+          if (value !== numericValue) {
+            this.value = numericValue;
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Only numbers are allowed. Letters have been removed.', timer: 2000, showConfirmButton: false });
+            } else {
+              alert('Only numbers are allowed. Letters have been removed.');
+            }
+          }
+        });
+      });
+      
+      // Setup for quantity/stock fields (integers only)
+      const quantityInputs = document.querySelectorAll('input[name="stock_quantity"], input#stock_quantity, input.quantity-input');
+      quantityInputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+          if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+              (e.keyCode === 65 && e.ctrlKey === true) ||
+              (e.keyCode === 67 && e.ctrlKey === true) ||
+              (e.keyCode === 86 && e.ctrlKey === true) ||
+              (e.keyCode === 88 && e.ctrlKey === true) ||
+              (e.keyCode >= 35 && e.keyCode <= 39)) {
+            return;
+          }
+          if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Please enter only numbers for quantity.', timer: 2000, showConfirmButton: false });
+            } else {
+              alert('Please enter only numbers for quantity.');
+            }
+          }
+        });
+        input.addEventListener('input', function(e) {
+          const value = this.value;
+          const numericValue = value.replace(/[^0-9]/g, '');
+          if (value !== numericValue) {
+            this.value = numericValue;
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Only numbers are allowed. Letters have been removed.', timer: 2000, showConfirmButton: false });
+            } else {
+              alert('Only numbers are allowed. Letters have been removed.');
+            }
+          }
+        });
+      });
+    }
+    
+    // Setup numeric validation when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      setupNumericInputs();
+    });
+    
     // Theme interactivity: cursor glows and simple loading overlay helper
     (function () {
       const glow = document.getElementById('cursorGlow');
