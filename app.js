@@ -2,7 +2,12 @@
 // Config & Auth Utilities
 // =======================
 // Use global CONFIG from config.js
-const API = window.CONFIG ? window.CONFIG.API_URL : 'http://localhost:8000/api';
+if (!window.CONFIG || !window.CONFIG.API_URL) {
+  console.error('ERROR: config.js not loaded! Make sure config.js is loaded before app.js');
+  alert('Configuration Error: config.js not loaded properly. Please refresh the page.');
+  throw new Error('window.CONFIG is not defined. config.js must be loaded first.');
+}
+const API = window.CONFIG.API_URL;
 
 function saveToken(token) { if (token) localStorage.setItem('token', token); }
 function getToken() { return localStorage.getItem('token'); }
@@ -52,6 +57,9 @@ async function api(path, { method = 'GET', data, multipart } = {}) {
   const token = getToken();
   const url = API + path;
   
+  // Debug logging
+  console.log(`API Request: ${method} ${url}`);
+  
   const ajaxConfig = {
     method: method,
     url: url,
@@ -81,10 +89,19 @@ async function api(path, { method = 'GET', data, multipart } = {}) {
         resolve(response);
       })
       .fail(function(xhr) {
+        // Debug logging for errors
+        console.error('API Request Failed:', {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          url: url,
+          method: method,
+          responseText: xhr.responseText
+        });
+        
         // If token is invalid (401), automatically logout and clear token
         if (xhr.status === 401) {
           // Try to logout on server to delete token
-          const logoutUrl = window.CONFIG ? window.CONFIG.API_URL + '/auth/logout' : API + '/auth/logout';
+          const logoutUrl = window.CONFIG.API_URL + '/auth/logout';
           $.ajax({
             method: 'POST',
             url: logoutUrl,
@@ -135,7 +152,7 @@ function checkTokenChange() {
     setAuthUI(false);
     // Try to logout on server to delete old token
     if (lastToken) {
-      const logoutUrl = window.CONFIG ? window.CONFIG.API_URL + '/auth/logout' : API + '/auth/logout';
+      const logoutUrl = window.CONFIG.API_URL + '/auth/logout';
       $.ajax({
         method: 'POST',
         url: logoutUrl,
@@ -264,8 +281,8 @@ async function loadProfile() {
 
   // backend historically returned different keys for the avatar path
   const avatarPath = me.avatar_path || me.profilePic || me.profile_pic || me.avatar || '';
-  const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
-  const baseUrl = window.CONFIG ? window.CONFIG.BASE_URL : 'http://localhost:8000/';
+  const uploadsUrl = window.CONFIG.UPLOADS_URL;
+  const baseUrl = window.CONFIG.BASE_URL;
   
   const img = document.getElementById('avatar');
   if (img) {
@@ -356,7 +373,7 @@ if (photoForm) {
       const avatarPath = res.profilePic || res.avatar_path || res.profile_pic || res.profilepic || res.avatar || '';
 
       if (avatarPath) {
-        const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
+        const uploadsUrl = window.CONFIG.UPLOADS_URL;
         
         // Process avatar path
         let imagePath = String(avatarPath);
@@ -511,8 +528,8 @@ function updateNavigationByRole(role) {
 
 // Render book card for grid layout
 function renderBookCard(row) {
-  const baseUrl = window.CONFIG ? window.CONFIG.BASE_URL : 'http://localhost:8000/';
-  const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
+  const baseUrl = window.CONFIG.BASE_URL;
+  const uploadsUrl = window.CONFIG.UPLOADS_URL;
   
   // Construct image URL properly
   let imagePath = String(row.image_path || 'default.png');
@@ -584,8 +601,8 @@ function renderBookCard(row) {
 function renderRow(row) {
   if (!tblBody) return; // If table doesn't exist, skip
   
-  const baseUrl = window.CONFIG ? window.CONFIG.BASE_URL : 'http://localhost:8000/';
-  const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
+  const baseUrl = window.CONFIG.BASE_URL;
+  const uploadsUrl = window.CONFIG.UPLOADS_URL;
   
   // Construct image URL properly
   let imagePath = String(row.image_path || 'default.png');
@@ -944,8 +961,8 @@ async function initEdit() {
     if (stockInput) stockInput.value = book.stock_quantity || 0;
 
     // Construct image URL properly
-    const baseUrl = window.CONFIG ? window.CONFIG.BASE_URL : 'http://localhost:8000/';
-    const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
+    const baseUrl = window.CONFIG.BASE_URL;
+    const uploadsUrl = window.CONFIG.UPLOADS_URL;
     
     // Get image path from book data
     let imagePath = String(book.image_path || 'default.png');
@@ -1036,10 +1053,14 @@ async function initEdit() {
       method = 'POST';
     } else {
       // If no image: Use PUT with JSON data
+      const priceInput = document.getElementById('price');
+      const stockInput = document.getElementById('stock_quantity');
       data = {
         ISBN: isbnInput.value,
         name: nameInput.value,
-        description: descInput.value
+        description: descInput.value,
+        price: priceInput ? parseFloat(priceInput.value) || 0 : 0,
+        stock_quantity: stockInput ? parseInt(stockInput.value) || 0 : 0
       };
       endpoint = `/books/${id}`;
       method = 'PUT';
