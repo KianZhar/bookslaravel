@@ -217,7 +217,7 @@
         
         <div class="form-group">
           <label class="form-label" for="contactNumber">Contact Number *</label>
-          <input type="text" id="contactNumber" name="contact_number" class="form-input" placeholder="e.g. 09123456789" required>
+          <input type="text" id="contactNumber" name="contact_number" class="form-input" placeholder="e.g. 09123456789" inputmode="numeric" required>
         </div>
         
         <div class="form-group">
@@ -277,6 +277,47 @@
         });
       });
     })();
+
+    // Initialize navigation immediately on page load
+    if (typeof setAuthUI === 'function' && typeof isAuthed === 'function') {
+      setAuthUI(isAuthed());
+    }
+    
+    // Make brand logo non-clickable when logged in
+    function updateBrandLogo() {
+      const brandLogo = document.querySelector('.brand-logo');
+      if (brandLogo && typeof isAuthed === 'function') {
+        if (isAuthed()) {
+          // User is logged in - make it non-clickable
+          if (brandLogo.tagName === 'A') {
+            const text = brandLogo.textContent;
+            const parent = brandLogo.parentNode;
+            const span = document.createElement('span');
+            span.className = brandLogo.className;
+            span.textContent = text;
+            span.style.cursor = 'default';
+            span.style.textDecoration = 'none';
+            parent.replaceChild(span, brandLogo);
+          }
+        } else {
+          // User is not logged in - make it clickable
+          if (brandLogo.tagName !== 'A') {
+            const text = brandLogo.textContent;
+            const parent = brandLogo.parentNode;
+            const link = document.createElement('a');
+            link.className = brandLogo.className;
+            link.href = 'index.html';
+            link.textContent = text;
+            parent.replaceChild(link, brandLogo);
+          }
+        }
+      }
+    }
+    
+    // Update brand logo on page load
+    if (typeof isAuthed === 'function') {
+      updateBrandLogo();
+    }
 
     // Cart functionality
     let cartItems = [];
@@ -406,6 +447,7 @@
               <div class="cart-item-quantity">
                 <button class="quantity-btn" onclick="updateQuantity(${item.id}, ${item.quantity - 1})">-</button>
                 <input type="number" class="quantity-input" value="${item.quantity}" min="1" 
+                       inputmode="numeric"
                        onchange="updateQuantity(${item.id}, parseInt(this.value))">
                 <button class="quantity-btn" onclick="updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
                 <button class="remove-btn" onclick="removeItem(${item.id})">Remove</button>
