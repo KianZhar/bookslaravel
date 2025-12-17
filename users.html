@@ -186,7 +186,7 @@
           <option value="admin">Admin</option>
         </select>
       </div>
-      <button type="submit" class="add-btn">Add User</button>
+      <button type="submit" class="add-btn" id="submitBtn">Add User</button>
     </form>
 
     <!-- USERS TABLE -->
@@ -323,8 +323,14 @@
       if (!user) return;
 
       const form = document.getElementById('addUserForm');
+      const submitBtn = document.getElementById('submitBtn');
       form.style.display = 'flex';
       editingUserId = userId;
+
+      // Change button text to "Update User"
+      if (submitBtn) {
+        submitBtn.textContent = 'Update User';
+      }
 
       // Populate form
       form.name.value = user.name || '';
@@ -422,6 +428,11 @@
           roleField.style.opacity = '1';
           roleField.style.cursor = 'default';
           roleField.title = '';
+        }
+        // Reset button text to "Add User"
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+          submitBtn.textContent = 'Add User';
         }
         editingUserId = null;
         form.style.display = 'none';
