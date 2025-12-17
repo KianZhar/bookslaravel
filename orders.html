@@ -156,14 +156,16 @@
     <!-- Sorting Controls -->
     <div class="sort-controls">
       <div class="sort-group">
-        <label class="sort-label">Sort by:</label>
+        <label class="sort-label">Filter by Status:</label>
         <select id="sortBy" class="sort-select">
-          <option value="status" selected>Status</option>
-          <option value="created_at">Date</option>
-          <option value="total_amount">Amount</option>
-          <option value="order_number">Order Number</option>
-          <option value="payment_status">Payment Status</option>
-          <option value="updated_at">Last Updated</option>
+          <option value="all" selected>All Orders</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="shipped">Shipped</option>
+          <option value="received">Received</option>
+          <option value="completed">Completed</option>
+          <option value="canceled">Canceled</option>
+          <option value="declined">Declined</option>
         </select>
       </div>
       <div class="sort-group">
@@ -201,8 +203,8 @@
     let orders = [];
     // currentUserRole is declared in app.js, so we just update it
     let localCurrentUserId = null;
-    let currentSortBy = 'status';
-    let currentSortOrder = 'asc';
+    let currentSortBy = 'all'; // Changed to 'all' for filtering by status
+    let currentSortOrder = 'desc';
 
     async function loadOrders() {
       const loadingIndicator = document.getElementById('loadingIndicator');
@@ -237,7 +239,11 @@
         }
         
         // Build API URL with sort parameters
-        const sortParams = `?sort_by=${currentSortBy}&sort_order=${currentSortOrder}`;
+        // If filtering by status, add status filter; otherwise just sort by date
+        let sortParams = `?sort_by=created_at&sort_order=${currentSortOrder}`;
+        if (currentSortBy !== 'all') {
+          sortParams += `&status=${currentSortBy}`;
+        }
         const response = await api('/orders' + sortParams);
         console.log('Orders API response:', response);
         console.log('Response type:', typeof response);
@@ -253,6 +259,11 @@
           orders = response.data;
         } else {
           orders = [];
+        }
+        
+        // Filter by status on frontend if backend doesn't support it
+        if (currentSortBy !== 'all' && orders.length > 0) {
+          orders = orders.filter(order => order.status && order.status.toLowerCase() === currentSortBy.toLowerCase());
         }
         
         console.log('Orders after parsing:', orders);
@@ -542,10 +553,10 @@
       if (sortOrderIcon && sortOrderText) {
         if (currentSortOrder === 'desc') {
           sortOrderIcon.textContent = '↓';
-          sortOrderText.textContent = 'Descending';
+          sortOrderText.textContent = 'Newest First';
         } else {
           sortOrderIcon.textContent = '↑';
-          sortOrderText.textContent = 'Ascending';
+          sortOrderText.textContent = 'Oldest First';
         }
         if (sortOrderBtn) {
           sortOrderBtn.classList.toggle('active', true);
