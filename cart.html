@@ -165,8 +165,8 @@
           </a>
           <a href="orders.html" class="nav-link">Orders</a>
           <a href="users.html" class="nav-link admin-only" style="display:none;">Users</a>
-          <a href="profile.html" class="nav-link">Profile</a>
-          <button class="nav-link auth-only" id="btnLogout" style="display:none;">Logout</button>
+          <a href="profile.html" class="nav-link auth-only">Profile</a>
+          <button class="nav-link auth-only" id="btnLogout">Logout</button>
           <a href="login.html" class="nav-link guest-only">Login</a>
           <a href="register.html" class="nav-link guest-only btn-primary">Register</a>
         </div>
@@ -824,12 +824,50 @@
     window.updateSelectedItems = updateSelectedItems;
     
     // Initialize
+    // Initialize navigation and cart
     if (typeof requireAuth === 'function') {
       requireAuth().then(() => {
+        // Update navigation after authentication
+        if (typeof setAuthUI === 'function') {
+          setAuthUI(true);
+        }
+        // Get user role and update navigation
+        if (typeof api === 'function') {
+          api('/users/me').then(user => {
+            if (typeof updateNavigationByRole === 'function') {
+              updateNavigationByRole(user.role || 'user');
+            }
+          }).catch(() => {
+            if (typeof updateNavigationByRole === 'function') {
+              updateNavigationByRole('user');
+            }
+          });
+        }
         loadCart();
         if (typeof updateCartBadge === 'function') updateCartBadge();
       });
     } else {
+      // Check if user is logged in
+      if (typeof isAuthed === 'function' && isAuthed()) {
+        if (typeof setAuthUI === 'function') {
+          setAuthUI(true);
+        }
+        if (typeof api === 'function') {
+          api('/users/me').then(user => {
+            if (typeof updateNavigationByRole === 'function') {
+              updateNavigationByRole(user.role || 'user');
+            }
+          }).catch(() => {
+            if (typeof updateNavigationByRole === 'function') {
+              updateNavigationByRole('user');
+            }
+          });
+        }
+      } else {
+        if (typeof setAuthUI === 'function') {
+          setAuthUI(false);
+        }
+      }
       loadCart();
       if (typeof updateCartBadge === 'function') updateCartBadge();
     }
