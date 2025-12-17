@@ -236,8 +236,8 @@
   <nav class="navbar">
     <div class="nav-container">
       <div class="nav-brand">
-        <a href="index.html" class="brand-logo">Books Management</a>
-        <div class="brand-tagline">Manage your library</div>
+        <a href="index.html" class="brand-logo">Book Store</a>
+        <div class="brand-tagline">E-Commerce Platform</div>
       </div>
       <button class="hamburger" id="hamburger" aria-label="Toggle menu">
         <span></span>
@@ -254,7 +254,7 @@
           </a>
           <a href="orders.html" class="nav-link">Orders</a>
           <a href="users.html" class="nav-link admin-only" style="display:none;">Users</a>
-          <a href="profile.html" class="nav-link">Profile</a>
+          <a href="profile.html" class="nav-link auth-only">Profile</a>
           <button class="nav-link auth-only btn-secondary" id="logoutBtn">Logout</button>
           <a href="login.html" class="nav-link guest-only">Login</a>
         </div>
@@ -286,12 +286,12 @@
       
       <div class="form-group">
         <label class="form-label">Price</label>
-        <input type="number" name="price" class="form-input" placeholder="e.g. 29.99" step="0.01" min="0" required>
+        <input type="number" name="price" class="form-input" placeholder="e.g. 29.99" step="0.01" min="0" inputmode="decimal" required>
       </div>
       
       <div class="form-group">
         <label class="form-label">Stock Quantity</label>
-        <input type="number" name="stock_quantity" class="form-input" placeholder="e.g. 100" min="0" required>
+        <input type="number" name="stock_quantity" class="form-input" placeholder="e.g. 100" min="0" inputmode="numeric" required>
       </div>
       
       <div class="form-group">
