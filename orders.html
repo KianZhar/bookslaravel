@@ -432,9 +432,12 @@
         console.log('Rendering order:', order);
         const orderDate = new Date(order.created_at).toLocaleDateString();
         const statusClass = getStatusClass(order.status);
-        const userRole = (typeof currentUserRole !== 'undefined') ? currentUserRole : 'user';
+        // Use localCurrentUserRole for accurate role detection
+        const userRole = localCurrentUserRole || (typeof currentUserRole !== 'undefined' ? currentUserRole : 'user');
+        // Regular users can cancel/receive their own orders
         const canCancel = order.status === 'pending' && userRole === 'user';
         const canReceive = order.status === 'shipped' && userRole === 'user';
+        // Only sellers can manage orders (admins can only view/monitor)
         const canApprove = order.status === 'pending' && userRole === 'seller';
         const canDecline = order.status === 'pending' && userRole === 'seller';
         const canShip = order.status === 'confirmed' && userRole === 'seller';
