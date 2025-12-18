@@ -119,6 +119,14 @@
       .nav-links.active { right: 0; }
       .nav-link { width: 100%; text-align: left; padding: 1rem; border-radius: 8px; }
       
+      /* Ensure auth-only elements are visible in mobile menu when logged in */
+      .nav-links.active .auth-only {
+        display: block !important;
+      }
+      .nav-links.active .guest-only {
+        display: none !important;
+      }
+      
       /* Overlay for mobile menu */
       .nav-overlay { 
         display: none;
@@ -159,16 +167,15 @@
         <div class="nav-group">
           <a href="index.html" class="nav-link hide-for-admin">Home</a>
           <a href="books.html" class="nav-link">Books</a>
-          <a href="cart.html" class="nav-link cart-badge user-only">
+          <a href="cart.html" class="nav-link cart-badge user-only active">
             Cart
             <span class="cart-badge-count" id="cartBadge" style="display:none;">0</span>
           </a>
           <a href="orders.html" class="nav-link">Orders</a>
           <a href="users.html" class="nav-link admin-only" style="display:none;">Users</a>
           <a href="profile.html" class="nav-link auth-only">Profile</a>
-          <button class="nav-link auth-only" id="btnLogout">Logout</button>
+          <button class="nav-link auth-only btn-secondary" id="logoutBtn">Logout</button>
           <a href="login.html" class="nav-link guest-only">Login</a>
-          <a href="register.html" class="nav-link guest-only btn-primary">Register</a>
         </div>
       </div>
     </div>
@@ -263,6 +270,16 @@
         navLinks.classList.toggle('active');
         navOverlay.classList.toggle('active');
         document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+        
+        // Ensure auth-only elements are visible when menu opens
+        if (navLinks.classList.contains('active') && typeof isAuthed === 'function' && isAuthed()) {
+          navLinks.querySelectorAll('.auth-only').forEach(el => {
+            el.style.display = '';
+          });
+          navLinks.querySelectorAll('.guest-only').forEach(el => {
+            el.style.display = 'none';
+          });
+        }
       }
       
       hamburger.addEventListener('click', toggleMenu);
@@ -279,8 +296,28 @@
     })();
 
     // Initialize navigation immediately on page load
-    if (typeof setAuthUI === 'function' && typeof isAuthed === 'function') {
-      setAuthUI(isAuthed());
+    function initializeNavigation() {
+      if (typeof setAuthUI === 'function' && typeof isAuthed === 'function') {
+        const isLoggedIn = isAuthed();
+        setAuthUI(isLoggedIn);
+        
+        // Ensure auth-only elements are visible if logged in
+        if (isLoggedIn) {
+          document.querySelectorAll('.auth-only').forEach(el => {
+            el.style.display = '';
+          });
+          document.querySelectorAll('.guest-only').forEach(el => {
+            el.style.display = 'none';
+          });
+        }
+      }
+    }
+    
+    // Run immediately and also on DOM ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeNavigation);
+    } else {
+      initializeNavigation();
     }
     
     // Make brand logo non-clickable when logged in
@@ -470,6 +507,32 @@
     function setupNumericInputs() {
       const quantityInputs = document.querySelectorAll('.quantity-input');
       quantityInputs.forEach(input => {
+        // Prevent empty field on backspace/delete
+        input.addEventListener('keydown', function(e) {
+          // Check if backspace (8) or delete (46) is pressed
+          if (e.keyCode === 8 || e.keyCode === 46) {
+            const currentValue = this.value;
+            const selectionStart = this.selectionStart || 0;
+            const selectionEnd = this.selectionEnd || 0;
+            
+            // If all text is selected, prevent deletion
+            if (selectionStart === 0 && selectionEnd === currentValue.length && currentValue.length > 0) {
+              e.preventDefault();
+              this.value = '1';
+              this.setSelectionRange(1, 1);
+              return;
+            }
+            
+            // If only one character remains and it will be deleted, prevent and set to 1
+            if (currentValue.length === 1) {
+              e.preventDefault();
+              this.value = '1';
+              this.setSelectionRange(1, 1);
+              return;
+            }
+          }
+        });
+        
         // Prevent non-numeric input
         input.addEventListener('keypress', function(e) {
           // Allow: backspace, delete, tab, escape, enter, decimal point, and numbers
@@ -520,6 +583,15 @@
             } else {
               alert('Only numbers are allowed. Letters have been removed.');
             }
+          }
+          // Prevent empty field - if empty or becomes empty, set to 1
+          if (this.value === '' || this.value.length === 0) {
+            this.value = '1';
+          }
+          // Ensure minimum value of 1
+          const numValue = parseInt(this.value) || 1;
+          if (numValue < 1) {
+            this.value = '1';
           }
         });
       });
