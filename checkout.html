@@ -282,6 +282,11 @@
 
         const order = await api('/orders', { method: 'POST', data });
 
+        // Save shipping address to localStorage for next time
+        if (data.shipping_address) {
+          localStorage.setItem('lastShippingAddress', data.shipping_address);
+        }
+
         if (window.Swal && typeof Swal.fire === 'function') {
           Swal.fire({ 
             icon: 'success', 
@@ -345,17 +350,28 @@
       });
     }
     
-    // Load user information to populate contact number
+    // Load user information to populate contact number and shipping address
     async function loadUserInfo() {
       try {
         const user = await api('/users/me');
+        
+        // Populate contact number from user profile
         const contactNumberInput = document.querySelector('input[name="contact_number"]');
         if (contactNumberInput && user.contact_number) {
           contactNumberInput.value = user.contact_number;
         }
       } catch (err) {
         console.error('Failed to load user info:', err);
-        // Silently fail - user can still enter contact number manually
+        // Silently fail - user can still enter information manually
+      }
+      
+      // Load shipping address from localStorage (client-side only)
+      const shippingAddressInput = document.querySelector('textarea[name="shipping_address"]');
+      if (shippingAddressInput) {
+        const savedAddress = localStorage.getItem('lastShippingAddress');
+        if (savedAddress) {
+          shippingAddressInput.value = savedAddress;
+        }
       }
     }
 
