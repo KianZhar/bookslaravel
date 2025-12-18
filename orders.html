@@ -107,6 +107,14 @@
       .nav-links.active { right: 0; }
       .nav-link { width: 100%; text-align: left; padding: 1rem; border-radius: 8px; }
       
+      /* Ensure auth-only elements are visible in mobile menu when logged in */
+      .nav-links.active .auth-only {
+        display: block !important;
+      }
+      .nav-links.active .guest-only {
+        display: none !important;
+      }
+      
       /* Overlay for mobile menu */
       .nav-overlay { 
         display: none;
@@ -154,9 +162,8 @@
           <a href="orders.html" class="nav-link active">Orders</a>
           <a href="users.html" class="nav-link admin-only" style="display:none;">Users</a>
           <a href="profile.html" class="nav-link auth-only">Profile</a>
-          <button class="nav-link auth-only" id="btnLogout">Logout</button>
+          <button class="nav-link auth-only btn-secondary" id="logoutBtn">Logout</button>
           <a href="login.html" class="nav-link guest-only">Login</a>
-          <a href="register.html" class="nav-link guest-only btn-primary">Register</a>
         </div>
       </div>
     </div>
@@ -218,6 +225,16 @@
         navLinks.classList.toggle('active');
         navOverlay.classList.toggle('active');
         document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+        
+        // Ensure auth-only elements are visible when menu opens
+        if (navLinks.classList.contains('active') && typeof isAuthed === 'function' && isAuthed()) {
+          navLinks.querySelectorAll('.auth-only').forEach(el => {
+            el.style.display = '';
+          });
+          navLinks.querySelectorAll('.guest-only').forEach(el => {
+            el.style.display = 'none';
+          });
+        }
       }
       
       hamburger.addEventListener('click', toggleMenu);
@@ -234,8 +251,28 @@
     })();
 
     // Initialize navigation immediately on page load
-    if (typeof setAuthUI === 'function' && typeof isAuthed === 'function') {
-      setAuthUI(isAuthed());
+    function initializeNavigation() {
+      if (typeof setAuthUI === 'function' && typeof isAuthed === 'function') {
+        const isLoggedIn = isAuthed();
+        setAuthUI(isLoggedIn);
+        
+        // Ensure auth-only elements are visible if logged in
+        if (isLoggedIn) {
+          document.querySelectorAll('.auth-only').forEach(el => {
+            el.style.display = '';
+          });
+          document.querySelectorAll('.guest-only').forEach(el => {
+            el.style.display = 'none';
+          });
+        }
+      }
+    }
+    
+    // Run immediately and also on DOM ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeNavigation);
+    } else {
+      initializeNavigation();
     }
     
     // Make brand logo non-clickable when logged in
@@ -535,12 +572,17 @@
           `;
         }).join('');
 
+        // Get user information - handle different possible structures
+        const user = order.user || {};
+        const userName = user.name || order.user_name || order.buyer_name || order.customer_name || 'Unknown User';
+        
         return `
           <div class="order-card">
             <div class="order-header">
               <div>
                 <div class="order-number">${order.order_number}</div>
                 <div class="order-date">Ordered on ${orderDate}</div>
+                <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-top: 0.25rem; font-weight: 500;">Customer: ${userName}</div>
               </div>
               <span class="order-status ${statusClass}">${order.status.toUpperCase()}</span>
             </div>
