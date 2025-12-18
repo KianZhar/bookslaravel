@@ -574,7 +574,24 @@
 
         // Get user information - handle different possible structures
         const user = order.user || {};
-        const userName = user.name || order.user_name || order.buyer_name || order.customer_name || 'Unknown User';
+        const userName = user.name || 
+                        order.user_name || 
+                        order.buyer_name || 
+                        order.customer_name || 
+                        order.customer?.name ||
+                        (order.user_id ? `User #${order.user_id}` : 'Unknown User');
+        
+        // Debug: Log order structure to help identify user data
+        if (!userName || userName === 'Unknown User') {
+          console.log('Order user data structure:', {
+            order_user: order.user,
+            user_name: order.user_name,
+            buyer_name: order.buyer_name,
+            customer_name: order.customer_name,
+            user_id: order.user_id,
+            full_order: order
+          });
+        }
         
         return `
           <div class="order-card">
@@ -582,7 +599,9 @@
               <div>
                 <div class="order-number">${order.order_number}</div>
                 <div class="order-date">Ordered on ${orderDate}</div>
-                <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-top: 0.25rem; font-weight: 500;">Customer: ${userName}</div>
+                <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-top: 0.25rem; font-weight: 500;">
+                  <strong>Customer:</strong> ${userName}
+                </div>
               </div>
               <span class="order-status ${statusClass}">${order.status.toUpperCase()}</span>
             </div>
