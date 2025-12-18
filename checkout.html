@@ -282,21 +282,8 @@
 
         const order = await api('/orders', { method: 'POST', data });
 
-        // Save shipping address to localStorage with user ID for next time
-        if (data.shipping_address && data.shipping_address.trim() !== '') {
-          try {
-            // Get user ID to store address per user
-            const user = await api('/users/me');
-            const userId = user.id;
-            const storageKey = `lastShippingAddress_${userId}`;
-            localStorage.setItem(storageKey, data.shipping_address.trim());
-            console.log('Saved address to localStorage for user', userId, ':', data.shipping_address.trim());
-          } catch (err) {
-            console.error('Could not get user ID to save address:', err);
-            // Fallback: save without user ID (for backward compatibility)
-            localStorage.setItem('lastShippingAddress', data.shipping_address.trim());
-          }
-        }
+        // Address is automatically saved in the order in the database
+        // No need to save to localStorage - we'll fetch from the most recent order next time
 
         if (window.Swal && typeof Swal.fire === 'function') {
           Swal.fire({ 
@@ -381,7 +368,7 @@
       }
     }
     
-    // Load saved address from localStorage (user-specific)
+    // Load saved address from current user's most recent order in database
     async function loadSavedAddress() {
       // Try multiple times to ensure DOM is ready
       let attempts = 0;
@@ -391,41 +378,56 @@
         const shippingAddressInput = document.querySelector('textarea[name="shipping_address"]');
         if (shippingAddressInput) {
           try {
-            // Get user ID to load user-specific address
+            // Get current user ID first
             const user = await api('/users/me');
             if (!user || !user.id) {
               console.log('No user ID available');
               return true;
             }
+            const currentUserId = user.id;
             
-            const userId = user.id;
-            const storageKey = `lastShippingAddress_${userId}`;
-            const savedAddress = localStorage.getItem(storageKey);
+            // Fetch orders - DO NOT use &all=true to ensure we only get current user's orders
+            // For regular users, backend filters by user_id automatically
+            // For sellers/admins, we need to filter on frontend to get only their own orders
+            const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
             
-            // Fallback to old key for backward compatibility
-            const fallbackAddress = savedAddress ? null : localStorage.getItem('lastShippingAddress');
-            const addressToUse = savedAddress || fallbackAddress;
+            // Handle different response structures
+            let orders = [];
+            if (Array.isArray(ordersResponse)) {
+              orders = ordersResponse;
+            } else if (ordersResponse && ordersResponse.orders) {
+              orders = ordersResponse.orders;
+            } else if (ordersResponse && Array.isArray(ordersResponse.data)) {
+              orders = ordersResponse.data;
+            }
             
-            if (addressToUse && addressToUse.trim() !== '') {
-              shippingAddressInput.value = addressToUse;
-              console.log('✓ Loaded saved address for user', userId, ':', addressToUse);
-              return true; // Success
+            // Filter to only get orders belonging to the current user
+            // This ensures sellers/admins get their own address, not customer addresses
+            const userOrders = orders.filter(order => {
+              const orderUserId = order.user_id || order.user?.id;
+              return orderUserId === currentUserId;
+            });
+            
+            // Get the most recent order from current user's orders
+            if (userOrders && userOrders.length > 0) {
+              const mostRecentOrder = userOrders[0];
+              const savedAddress = mostRecentOrder.shipping_address;
+              
+              if (savedAddress && savedAddress.trim() !== '') {
+                shippingAddressInput.value = savedAddress;
+                console.log('✓ Loaded address from most recent order for user', currentUserId, ':', savedAddress);
+                return true; // Success
+              } else {
+                console.log('Most recent order found but no shipping address');
+                return true; // Found order but no address
+              }
             } else {
-              console.log('No saved address found in localStorage for user', userId);
-              // Debug: show all localStorage keys
-              console.log('Available localStorage keys:', Object.keys(localStorage));
-              return true; // Found element but no address
+              console.log('No previous orders found for current user', currentUserId);
+              return true; // No orders yet
             }
           } catch (err) {
-            console.log('Could not get user ID to load address:', err);
-            // Fallback: try loading without user ID
-            const savedAddress = localStorage.getItem('lastShippingAddress');
-            if (savedAddress && savedAddress.trim() !== '') {
-              shippingAddressInput.value = savedAddress;
-              console.log('✓ Loaded saved address (fallback):', savedAddress);
-              return true;
-            }
-            return true; // Found element but no address
+            console.log('Could not load address from orders:', err);
+            return true; // Silently fail - user can enter manually
           }
         } else if (attempts < maxAttempts) {
           attempts++;
