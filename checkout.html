@@ -361,7 +361,7 @@
       });
     }
     
-    // Load user information to populate contact number and shipping address
+    // Load user information to populate contact number
     async function loadUserInfo() {
       try {
         const user = await api('/users/me');
@@ -371,53 +371,21 @@
         if (contactNumberInput && user.contact_number) {
           contactNumberInput.value = user.contact_number;
         }
+        
+        // Return user for address loading
+        return user;
       } catch (err) {
         console.error('Failed to load user info:', err);
         // Silently fail - user can still enter information manually
+        return null;
       }
-      
-      // Load shipping address from localStorage (client-side only, user-specific)
-      // Use setTimeout to ensure DOM is ready
-      setTimeout(async () => {
-        const shippingAddressInput = document.querySelector('textarea[name="shipping_address"]');
-        if (shippingAddressInput) {
-          try {
-            // Get user ID to load user-specific address
-            const user = await api('/users/me');
-            const userId = user.id;
-            const storageKey = `lastShippingAddress_${userId}`;
-            const savedAddress = localStorage.getItem(storageKey);
-            
-            // Fallback to old key for backward compatibility
-            const fallbackAddress = savedAddress ? null : localStorage.getItem('lastShippingAddress');
-            const addressToUse = savedAddress || fallbackAddress;
-            
-            if (addressToUse && addressToUse.trim() !== '') {
-              shippingAddressInput.value = addressToUse;
-              console.log('Loaded saved address from localStorage for user', userId, ':', addressToUse);
-            } else {
-              console.log('No saved address found in localStorage for user', userId);
-            }
-          } catch (err) {
-            console.log('Could not get user ID to load address:', err);
-            // Fallback: try loading without user ID
-            const savedAddress = localStorage.getItem('lastShippingAddress');
-            if (savedAddress && savedAddress.trim() !== '') {
-              shippingAddressInput.value = savedAddress;
-              console.log('Loaded saved address (fallback):', savedAddress);
-            }
-          }
-        } else {
-          console.log('Shipping address textarea not found');
-        }
-      }, 100);
     }
     
-    // Also load address immediately on page load (in case loadUserInfo is called before DOM is ready)
+    // Load saved address from localStorage (user-specific)
     async function loadSavedAddress() {
       // Try multiple times to ensure DOM is ready
       let attempts = 0;
-      const maxAttempts = 10;
+      const maxAttempts = 15;
       
       const tryLoad = async () => {
         const shippingAddressInput = document.querySelector('textarea[name="shipping_address"]');
@@ -425,6 +393,11 @@
           try {
             // Get user ID to load user-specific address
             const user = await api('/users/me');
+            if (!user || !user.id) {
+              console.log('No user ID available');
+              return true;
+            }
+            
             const userId = user.id;
             const storageKey = `lastShippingAddress_${userId}`;
             const savedAddress = localStorage.getItem(storageKey);
@@ -439,6 +412,8 @@
               return true; // Success
             } else {
               console.log('No saved address found in localStorage for user', userId);
+              // Debug: show all localStorage keys
+              console.log('Available localStorage keys:', Object.keys(localStorage));
               return true; // Found element but no address
             }
           } catch (err) {
@@ -454,7 +429,7 @@
           }
         } else if (attempts < maxAttempts) {
           attempts++;
-          setTimeout(tryLoad, 100); // Try again after 100ms
+          setTimeout(tryLoad, 150); // Try again after 150ms
           return false; // Not ready yet
         } else {
           console.log('Shipping address textarea not found after', maxAttempts, 'attempts');
@@ -462,7 +437,7 @@
         }
       };
       
-      tryLoad();
+      await tryLoad();
     }
 
     // Make brand logo non-clickable when logged in
@@ -502,27 +477,28 @@
     }
     
     // Initialize
-    // Load saved address immediately when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadSavedAddress);
-    } else {
-      loadSavedAddress();
-    }
-    
     if (typeof requireAuth === 'function') {
-      requireAuth().then(() => {
+      requireAuth().then(async () => {
         loadCart();
-        loadUserInfo();
+        await loadUserInfo();
         setupContactNumberValidation();
-        loadSavedAddress(); // Also load after auth
+        await loadSavedAddress(); // Load after auth is confirmed
         if (typeof updateCartBadge === 'function') updateCartBadge();
       });
     } else {
-      loadCart();
-      loadUserInfo();
-      setupContactNumberValidation();
-      loadSavedAddress(); // Also load here
-      if (typeof updateCartBadge === 'function') updateCartBadge();
+      // Check if user is logged in
+      if (typeof isAuthed === 'function' && isAuthed()) {
+        loadCart();
+        loadUserInfo().then(() => {
+          loadSavedAddress(); // Load after user info is loaded
+        });
+        setupContactNumberValidation();
+        if (typeof updateCartBadge === 'function') updateCartBadge();
+      } else {
+        loadCart();
+        setupContactNumberValidation();
+        if (typeof updateCartBadge === 'function') updateCartBadge();
+      }
     }
   </script>
 </body>
