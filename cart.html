@@ -802,6 +802,96 @@
         // Silently fail - user can still enter contact number manually
       }
     }
+    
+    // Load saved address from current user's most recent order in database
+    async function loadSavedAddress() {
+      console.log('🔄 loadSavedAddress() called (cart.html)');
+      // Try multiple times to ensure DOM is ready
+      let attempts = 0;
+      const maxAttempts = 15;
+      
+      const tryLoad = async () => {
+        const shippingAddressInput = document.getElementById('shippingAddress');
+        console.log('🔍 Looking for address field, attempt', attempts + 1, ':', shippingAddressInput ? 'Found' : 'Not found');
+        
+        if (shippingAddressInput) {
+          try {
+            console.log('📡 Fetching user info...');
+            // Get current user ID first
+            const user = await api('/users/me');
+            if (!user || !user.id) {
+              console.log('❌ No user ID available');
+              return true;
+            }
+            const currentUserId = user.id;
+            console.log('✅ User ID:', currentUserId);
+            
+            // Fetch orders - DO NOT use &all=true to ensure we only get current user's orders
+            // For regular users, backend filters by user_id automatically
+            // For sellers/admins, we need to filter on frontend to get only their own orders
+            console.log('📡 Fetching orders...');
+            const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
+            console.log('📦 Orders response:', ordersResponse);
+            
+            // Handle different response structures
+            let orders = [];
+            if (Array.isArray(ordersResponse)) {
+              orders = ordersResponse;
+            } else if (ordersResponse && ordersResponse.orders) {
+              orders = ordersResponse.orders;
+            } else if (ordersResponse && Array.isArray(ordersResponse.data)) {
+              orders = ordersResponse.data;
+            }
+            
+            console.log('📋 Parsed orders:', orders);
+            console.log('📊 Total orders found:', orders.length);
+            
+            // Filter to only get orders belonging to the current user
+            // This ensures sellers/admins get their own address, not customer addresses
+            const userOrders = orders.filter(order => {
+              const orderUserId = order.user_id || order.user?.id;
+              const matches = orderUserId === currentUserId;
+              console.log('🔍 Order', order.id, '- User ID:', orderUserId, '- Matches:', matches);
+              return matches;
+            });
+            
+            console.log('👤 User orders after filtering:', userOrders.length);
+            
+            // Get the most recent order from current user's orders
+            if (userOrders && userOrders.length > 0) {
+              const mostRecentOrder = userOrders[0];
+              console.log('📦 Most recent order:', mostRecentOrder);
+              const savedAddress = mostRecentOrder.shipping_address;
+              console.log('📍 Address from order:', savedAddress);
+              
+              if (savedAddress && savedAddress.trim() !== '') {
+                shippingAddressInput.value = savedAddress;
+                console.log('✅ Loaded address from most recent order for user', currentUserId, ':', savedAddress);
+                return true; // Success
+              } else {
+                console.log('⚠️ Most recent order found but no shipping address');
+                return true; // Found order but no address
+              }
+            } else {
+              console.log('ℹ️ No previous orders found for current user', currentUserId);
+              return true; // No orders yet
+            }
+          } catch (err) {
+            console.error('❌ Could not load address from orders:', err);
+            return true; // Silently fail - user can enter manually
+          }
+        } else if (attempts < maxAttempts) {
+          attempts++;
+          setTimeout(tryLoad, 150); // Try again after 150ms
+          return false; // Not ready yet
+        } else {
+          console.log('❌ Shipping address textarea not found after', maxAttempts, 'attempts');
+          return false; // Failed
+        }
+      };
+      
+      await tryLoad();
+    }
 
     document.getElementById('checkoutBtn').addEventListener('click', () => {
       const checkboxes = document.querySelectorAll('.cart-item-checkbox');
@@ -824,7 +914,10 @@
         // Update checkout totals based on selected items
         updateSelectedItems();
         // Load user info
-        loadUserInfo();
+        loadUserInfo().then(() => {
+          // Load saved address after user info is loaded
+          loadSavedAddress();
+        });
         // Setup contact number validation
         setupContactNumberValidation();
       }
