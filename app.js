@@ -807,6 +807,7 @@ if (addForm && (tblBody || booksGrid)) {
               <p style="margin-bottom: 1rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">Available Stock: ${maxQuantity}</p>
               <input type="number" id="quantityInput" class="swal2-input" 
                      value="1" min="1" max="${maxQuantity}" 
+                     inputmode="numeric"
                      style="color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);"
                      placeholder="Enter quantity">
             `,
@@ -820,6 +821,31 @@ if (addForm && (tblBody || booksGrid)) {
               if (input) {
                 input.focus();
                 input.select();
+                // Prevent empty field on backspace/delete
+                input.addEventListener('keydown', function(e) {
+                  // Check if backspace (8) or delete (46) is pressed
+                  if (e.keyCode === 8 || e.keyCode === 46) {
+                    const currentValue = this.value;
+                    const selectionStart = this.selectionStart || 0;
+                    const selectionEnd = this.selectionEnd || 0;
+                    
+                    // If all text is selected, prevent deletion
+                    if (selectionStart === 0 && selectionEnd === currentValue.length && currentValue.length > 0) {
+                      e.preventDefault();
+                      this.value = '1';
+                      this.setSelectionRange(1, 1);
+                      return;
+                    }
+                    
+                    // If only one character remains and it will be deleted, prevent and set to 1
+                    if (currentValue.length === 1) {
+                      e.preventDefault();
+                      this.value = '1';
+                      this.setSelectionRange(1, 1);
+                      return;
+                    }
+                  }
+                });
                 // Add numeric-only validation
                 input.addEventListener('keypress', function(e) {
                   if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
@@ -841,6 +867,15 @@ if (addForm && (tblBody || booksGrid)) {
                   if (value !== numericValue) {
                     this.value = numericValue;
                     Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Only numbers are allowed. Letters have been removed.', timer: 2000, showConfirmButton: false });
+                  }
+                  // Prevent empty field - if empty or becomes empty, set to 1
+                  if (this.value === '' || this.value.length === 0) {
+                    this.value = '1';
+                  }
+                  // Ensure minimum value of 1
+                  const numValue = parseInt(this.value) || 1;
+                  if (numValue < 1) {
+                    this.value = '1';
                   }
                 });
               }
