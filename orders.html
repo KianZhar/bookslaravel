@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Content-Security-Policy" content="default-src * 'self' data: gap: 'unsafe-inline' 'unsafe-eval'; style-src * 'self' 'unsafe-inline'; media-src *; img-src * 'self' data:; connect-src * 'self';" />
-  <title>Orders - Book Store</title>
+  <title>Checkout - Book Store</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/mobile-responsive.css">
   <style>
@@ -48,85 +48,45 @@
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .page-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; text-align: center; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .page-subtitle { font-size: 1.1rem; color: rgba(255,255,255,0.7); text-align:center; margin-bottom: 2rem; }
-    .order-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
-    .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
-    .order-number { font-size: 1.2rem; font-weight: 600; color: var(--accent-b); }
-    .order-date { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
-    .order-status { padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
-    .status-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
-    .status-confirmed { background: rgba(0, 123, 255, 0.2); color: #007bff; }
-    .status-shipped { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; }
-    .status-received { background: rgba(40, 167, 69, 0.2); color: #28a745; }
-    .status-canceled { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
-    .status-declined { background: rgba(255, 87, 34, 0.2); color: #ff5722; }
-    .status-completed { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
-    .order-items { margin: 1rem 0; }
-    .order-item { display: flex; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 0.5rem; align-items: center; }
-    .order-item-image { width: 60px; height: 60px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.06); }
-    .order-item-details { flex: 1; }
-    .order-item-name { font-weight: 600; margin-bottom: 0.25rem; }
-    .order-item-info { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
-    .order-summary { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); }
-    .order-total { font-size: 1.3rem; font-weight: 700; color: var(--accent-b); }
-    .order-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
-    .action-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
-    .btn-cancel { background: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.3); }
-    .btn-cancel:hover { background: rgba(220, 53, 69, 0.3); }
-    .btn-view { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; border: 1px solid rgba(78, 205, 196, 0.3); }
-    .btn-view:hover { background: rgba(78, 205, 196, 0.3); }
-    .empty-orders { text-align: center; padding: 4rem 2rem; color: rgba(255,255,255,0.6); }
-    .empty-orders-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .checkout-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .checkout-form { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 2rem; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.9); font-weight: 500; }
+    .form-input, .form-textarea { width: 100%; padding: 1rem 1.25rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; color: #fff; font-size: 1rem; font-family: inherit; }
+    .form-textarea { min-height: 120px; resize: vertical; }
+    .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent-b); background: rgba(255,255,255,0.05); }
+    .order-summary-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 2rem; position: sticky; top: 120px; }
+    .summary-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--accent-b); }
+    .summary-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .summary-item:last-child { border-bottom: none; font-size: 1.3rem; font-weight: 700; color: var(--accent-b); margin-top: 1rem; }
+    .payment-info { background: rgba(78, 205, 196, 0.1); border: 1px solid rgba(78, 205, 196, 0.2); border-radius: 8px; padding: 1rem; margin-top: 1.5rem; }
+    .payment-info-title { font-weight: 600; color: var(--accent-b); margin-bottom: 0.5rem; }
+    .payment-info-text { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+    .place-order-btn { width: 100%; padding: 1rem 2rem; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); border: none; border-radius: 12px; color: #fff; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; }
+    .place-order-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 107, 107, 0.3); }
+    .place-order-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-0); z-index: 9999; display:flex; justify-content:center; align-items:center; }
     .loading-indicator { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; min-height: 200px; }
     .loader { width:50px; height:50px; border:3px solid rgba(255,255,255,0.08); border-top:3px solid var(--accent-a); border-radius:50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .sort-controls { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
-    .sort-group { display: flex; gap: 0.5rem; align-items: center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); }
-    .sort-label { color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-right: 0.5rem; }
-    .sort-select { background: rgba(255,255,255,0.95); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0.5rem 1rem; color: #000; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; }
-    .sort-select:hover { background: rgba(255,255,255,1); border-color: rgba(255,255,255,0.12); }
-    .sort-select:focus { outline: none; border-color: var(--accent-b); box-shadow: 0 0 0 2px rgba(78,205,196,0.2); background: rgba(255,255,255,1); }
-    .sort-select option { background: #fff; color: #000; }
-    .sort-order-btn { background: rgba(78,205,196,0.2); border: 1px solid rgba(78,205,196,0.3); border-radius: 6px; padding: 0.5rem 1rem; color: #4ecdc4; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; }
-    .sort-order-btn:hover { background: rgba(78,205,196,0.3); }
-    .sort-order-btn.active { background: rgba(78,205,196,0.4); border-color: var(--accent-b); }
     .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.5rem; z-index: 1001; }
     .hamburger span { display: block; width: 25px; height: 2px; background: #fff; margin: 5px 0; transition: 0.3s; }
     .cart-badge { position: relative; }
     .cart-badge-count { position: absolute; top: -8px; right: -8px; background: var(--accent-a); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
     
+    @media (max-width:968px) {
+      .checkout-container { grid-template-columns: 1fr; }
+      .order-summary-card { position: static; }
+    }
+    
     @media (max-width:768px) {
-      .order-header { flex-direction: column; align-items: flex-start; }
-      .order-item { flex-direction: column; text-align: center; }
-      .order-item-image { width: 100px; height: 100px; }
       .hamburger { display: block; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); }
       .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
       .hamburger.active span:nth-child(2) { opacity: 0; }
       .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
-      .nav-links { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 5rem 2rem 2rem; gap: 0.5rem; transition: right 0.3s ease; border-left: 1px solid rgba(255,255,255,0.1); z-index: 999; }
+      .nav-links { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 5rem 2rem 2rem; gap: 0.5rem; transition: right 0.3s ease; border-left: 1px solid rgba(255,255,255,0.1); }
       .nav-links.active { right: 0; }
       .nav-link { width: 100%; text-align: left; padding: 1rem; border-radius: 8px; }
-      
-      /* Ensure auth-only elements are visible in mobile menu when logged in */
-      .nav-links.active .auth-only {
-        display: block !important;
-      }
-      .nav-links.active .guest-only {
-        display: none !important;
-      }
-      
-      /* Overlay for mobile menu */
-      .nav-overlay { 
-        display: none;
-        position: fixed; 
-        top: 0; 
-        left: 0; 
-        width: 100%; 
-        height: 100%; 
-        background: rgba(0,0,0,0.7); 
-        z-index: 998; 
-      }
-      .nav-overlay.active { display: block; }
     }
   </style>
 </head>
@@ -155,126 +115,349 @@
         <div class="nav-group">
           <a href="index.html" class="nav-link hide-for-admin">Home</a>
           <a href="books.html" class="nav-link">Books</a>
-          <a href="cart.html" class="nav-link cart-badge user-only" style="display:none;">
+          <a href="cart.html" class="nav-link cart-badge user-only">
             Cart
             <span class="cart-badge-count" id="cartBadge" style="display:none;">0</span>
           </a>
-          <a href="orders.html" class="nav-link active">Orders</a>
+          <a href="orders.html" class="nav-link">Orders</a>
           <a href="users.html" class="nav-link admin-only" style="display:none;">Users</a>
-          <a href="profile.html" class="nav-link auth-only">Profile</a>
-          <button class="nav-link auth-only btn-secondary" id="logoutBtn">Logout</button>
+          <a href="profile.html" class="nav-link">Profile</a>
+          <button class="nav-link auth-only" id="btnLogout" style="display:none;">Logout</button>
           <a href="login.html" class="nav-link guest-only">Login</a>
+          <a href="register.html" class="nav-link guest-only btn-primary">Register</a>
         </div>
       </div>
     </div>
   </nav>
-  <div class="nav-overlay" id="navOverlay"></div>
 
   <div class="main-content">
-    <h1 class="page-title" id="pageTitle">My Orders</h1>
-    <p class="page-subtitle" id="pageSubtitle">View your order history</p>
+    <h1 class="page-title">Checkout</h1>
+    <p class="page-subtitle">Complete your order</p>
 
-    <!-- Sorting Controls -->
-    <div class="sort-controls">
-      <div class="sort-group">
-        <label class="sort-label">Sort by:</label>
-        <select id="sortBy" class="sort-select">
-          <option value="all" selected>All Orders</option>
-          <option value="pending">Pending</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="shipped">Shipped</option>
-          <option value="received">Received</option>
-          <option value="completed">Completed</option>
-          <option value="canceled">Canceled</option>
-          <option value="declined">Declined</option>
-        </select>
+    <div class="checkout-container">
+      <div class="checkout-form">
+        <h2 style="margin-bottom: 1.5rem; color: var(--accent-b);">Shipping Information</h2>
+        <form id="checkoutForm">
+          <div class="form-group">
+            <label class="form-label">Shipping Address *</label>
+            <textarea name="shipping_address" class="form-textarea" placeholder="Enter your complete shipping address" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Number *</label>
+            <input type="text" name="contact_number" class="form-input" placeholder="e.g. +1234567890" inputmode="numeric" required>
+          </div>
+          <div class="payment-info">
+            <div class="payment-info-title">💳 Payment Method</div>
+            <div class="payment-info-text">Cash on Delivery - Pay when you receive your order</div>
+          </div>
+        </form>
       </div>
-      <div class="sort-group">
-        <button id="sortOrder" class="sort-order-btn" data-order="desc">
-          <span id="sortOrderIcon">↓</span>
-          <span id="sortOrderText">Newest First</span>
-        </button>
+
+      <div class="order-summary-card">
+        <h3 class="summary-title">Order Summary</h3>
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+          <div class="loader"></div>
+          <p style="margin-top: 1rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">Loading order...</p>
+        </div>
+        <div id="orderItems"></div>
+        <div class="summary-item">
+          <span>Total</span>
+          <span id="orderTotal">₱0.00</span>
+        </div>
+        <button class="place-order-btn" id="placeOrderBtn">Place Order</button>
       </div>
     </div>
-
-    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
-      <div class="loader"></div>
-      <p style="margin-top: 1rem; color: rgba(255,255,255,0.7);">Loading orders...</p>
-    </div>
-    <div id="ordersContainer" style="display: none;"></div>
   </div>
 
-  <!-- SweetAlert2 for dialogs -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
   <script src="config.js"></script>
   <script src="error-handler.js"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="app.js"></script>
   <script>
     // Mobile menu toggle
-    // Mobile menu toggle
-    (function() {
-      const hamburger = document.getElementById('hamburger');
-      const navLinks = document.getElementById('navLinks');
-      const navOverlay = document.getElementById('navOverlay');
-      
-      if (!hamburger || !navLinks || !navOverlay) return;
-      
-      function toggleMenu() {
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
         hamburger.classList.toggle('active');
         navLinks.classList.toggle('active');
-        navOverlay.classList.toggle('active');
-        document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+      });
+    }
+
+    let cartItems = [];
+    let cartTotal = 0;
+
+    async function loadCart() {
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      const orderItems = document.getElementById('orderItems');
+      
+      // Show loading indicator BEFORE starting fetch
+      if (loadingIndicator) loadingIndicator.style.display = 'flex';
+      if (orderItems) orderItems.style.display = 'none';
+      
+      try {
+        const response = await api('/cart');
+        cartItems = response.items || [];
+        cartTotal = parseFloat(response.total || 0);
+
+        if (cartItems.length === 0) {
+          if (window.Swal && typeof Swal.fire === 'function') {
+            Swal.fire({ icon: 'warning', title: 'Empty Cart', text: 'Your cart is empty. Redirecting to books...' });
+          }
+          setTimeout(() => location.href = 'books.html', 2000);
+          return;
+        }
+
+        renderOrderSummary();
+      } catch (err) {
+        console.error('Failed to load cart:', err);
+        if (err.message && err.message.includes('Unauthorized')) {
+          location.href = 'login.html';
+        }
+      } finally {
+        // Hide loading indicator and show order items
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        if (orderItems) orderItems.style.display = 'block';
+      }
+    }
+
+    function renderOrderSummary() {
+      const container = document.getElementById('orderItems');
+      const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
+      
+      container.innerHTML = cartItems.map(item => {
+        const book = item.book || {};
+        const bookPrice = parseFloat(book.price || 0) || 0;
+        const subtotal = (item.quantity * bookPrice).toFixed(2);
         
-        // Ensure auth-only elements are visible when menu opens
-        if (navLinks.classList.contains('active') && typeof isAuthed === 'function' && isAuthed()) {
-          navLinks.querySelectorAll('.auth-only').forEach(el => {
-            el.style.display = '';
+        return `
+          <div class="summary-item">
+            <span>${book.name || 'Unknown'} × ${item.quantity}</span>
+            <span>₱${subtotal}</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('orderTotal').textContent = `₱${cartTotal.toFixed(2)}`;
+    }
+
+    document.getElementById('placeOrderBtn').addEventListener('click', async () => {
+      const form = document.getElementById('checkoutForm');
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      
+      // Always use cash on delivery
+      data.payment_method = 'cash_on_delivery';
+
+      if (!data.shipping_address || !data.contact_number) {
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'warning', title: 'Missing Information', text: 'Please fill in all required fields' });
+        } else {
+          alert('Please fill in all required fields');
+        }
+        return;
+      }
+
+      if (cartItems.length === 0) {
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'warning', title: 'Empty Cart', text: 'Your cart is empty' });
+        }
+        return;
+      }
+
+      const confirmed = window.Swal && typeof Swal.fire === 'function' 
+        ? (await Swal.fire({ 
+            icon: 'question', 
+            title: 'Place Order', 
+            html: `Total: <strong>₱${cartTotal.toFixed(2)}</strong><br>Payment: Cash on Delivery<br><br>Confirm order?`,
+            showCancelButton: true 
+          })).isConfirmed
+        : confirm(`Place order for ₱${cartTotal.toFixed(2)}?`);
+
+      if (!confirmed) return;
+
+      try {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('placeOrderBtn').disabled = true;
+
+        const order = await api('/orders', { method: 'POST', data });
+
+        // Address is automatically saved in the order in the database
+        // No need to save to localStorage - we'll fetch from the most recent order next time
+
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ 
+            icon: 'success', 
+            title: 'Order Placed!', 
+            html: `Order Number: <strong>${order.order.order_number}</strong><br>Total: <strong>₱${order.order.total_amount}</strong><br><br>You will pay when you receive your order.`,
+            confirmButtonText: 'View Orders'
+          }).then(() => {
+            location.href = 'orders.html';
           });
-          navLinks.querySelectorAll('.guest-only').forEach(el => {
-            el.style.display = 'none';
-          });
+        } else {
+          alert(`Order placed successfully! Order #${order.order.order_number}`);
+          location.href = 'orders.html';
+        }
+      } catch (err) {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('placeOrderBtn').disabled = false;
+        
+        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'error', title: 'Order Failed', text: message });
+        } else {
+          alert('Failed to place order: ' + message);
         }
       }
-      
-      hamburger.addEventListener('click', toggleMenu);
-      navOverlay.addEventListener('click', toggleMenu);
-      
-      // Close menu when clicking on a link
-      navLinks.querySelectorAll('.nav-link, a').forEach(link => {
-        link.addEventListener('click', () => {
-          if (navLinks.classList.contains('active')) {
-            toggleMenu();
+    });
+
+    // Function to setup numeric-only validation for contact number
+    function setupContactNumberValidation() {
+      const contactInputs = document.querySelectorAll('input[name="contact_number"]');
+      contactInputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+          if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+              (e.keyCode === 65 && e.ctrlKey === true) ||
+              (e.keyCode === 67 && e.ctrlKey === true) ||
+              (e.keyCode === 86 && e.ctrlKey === true) ||
+              (e.keyCode === 88 && e.ctrlKey === true) ||
+              (e.keyCode >= 35 && e.keyCode <= 39)) {
+            return;
+          }
+          if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Please enter only numbers for contact number.', timer: 2000, showConfirmButton: false });
+            } else {
+              alert('Please enter only numbers for contact number.');
+            }
+          }
+        });
+        input.addEventListener('input', function(e) {
+          const value = this.value;
+          const numericValue = value.replace(/[^0-9]/g, '');
+          if (value !== numericValue) {
+            this.value = numericValue;
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Only numbers are allowed. Letters have been removed.', timer: 2000, showConfirmButton: false });
+            } else {
+              alert('Only numbers are allowed. Letters have been removed.');
+            }
           }
         });
       });
-    })();
-
-    // Initialize navigation immediately on page load
-    function initializeNavigation() {
-      if (typeof setAuthUI === 'function' && typeof isAuthed === 'function') {
-        const isLoggedIn = isAuthed();
-        setAuthUI(isLoggedIn);
+    }
+    
+    // Load user information to populate contact number
+    async function loadUserInfo() {
+      try {
+        const user = await api('/users/me');
         
-        // Ensure auth-only elements are visible if logged in
-        if (isLoggedIn) {
-          document.querySelectorAll('.auth-only').forEach(el => {
-            el.style.display = '';
-          });
-          document.querySelectorAll('.guest-only').forEach(el => {
-            el.style.display = 'none';
-          });
+        // Populate contact number from user profile
+        const contactNumberInput = document.querySelector('input[name="contact_number"]');
+        if (contactNumberInput && user.contact_number) {
+          contactNumberInput.value = user.contact_number;
         }
+        
+        // Return user for address loading
+        return user;
+      } catch (err) {
+        console.error('Failed to load user info:', err);
+        // Silently fail - user can still enter information manually
+        return null;
       }
     }
     
-    // Run immediately and also on DOM ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeNavigation);
-    } else {
-      initializeNavigation();
+    // Load saved address from current user's most recent order in database
+    async function loadSavedAddress() {
+      console.log('🔄 loadSavedAddress() called');
+      // Try multiple times to ensure DOM is ready
+      let attempts = 0;
+      const maxAttempts = 15;
+      
+      const tryLoad = async () => {
+        const shippingAddressInput = document.querySelector('textarea[name="shipping_address"]');
+        console.log('🔍 Looking for address field, attempt', attempts + 1, ':', shippingAddressInput ? 'Found' : 'Not found');
+        
+        if (shippingAddressInput) {
+          try {
+            console.log('📡 Fetching user info...');
+            // Get current user ID first
+            const user = await api('/users/me');
+            if (!user || !user.id) {
+              console.log('❌ No user ID available');
+              return true;
+            }
+            const currentUserId = user.id;
+            console.log('✅ User ID:', currentUserId);
+            
+            // Fetch orders - DO NOT use &all=true to ensure we only get current user's orders
+            // For regular users, backend filters by user_id automatically
+            // For sellers/admins, we need to filter on frontend to get only their own orders
+            console.log('📡 Fetching orders...');
+            const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
+            console.log('📦 Orders response:', ordersResponse);
+            
+            // Handle different response structures
+            let orders = [];
+            if (Array.isArray(ordersResponse)) {
+              orders = ordersResponse;
+            } else if (ordersResponse && ordersResponse.orders) {
+              orders = ordersResponse.orders;
+            } else if (ordersResponse && Array.isArray(ordersResponse.data)) {
+              orders = ordersResponse.data;
+            }
+            
+            console.log('📋 Parsed orders:', orders);
+            console.log('📊 Total orders found:', orders.length);
+            
+            // Filter to only get orders belonging to the current user
+            // This ensures sellers/admins get their own address, not customer addresses
+            const userOrders = orders.filter(order => {
+              const orderUserId = order.user_id || order.user?.id;
+              const matches = orderUserId === currentUserId;
+              console.log('🔍 Order', order.id, '- User ID:', orderUserId, '- Matches:', matches);
+              return matches;
+            });
+            
+            console.log('👤 User orders after filtering:', userOrders.length);
+            
+            // Get the most recent order from current user's orders
+            if (userOrders && userOrders.length > 0) {
+              const mostRecentOrder = userOrders[0];
+              console.log('📦 Most recent order:', mostRecentOrder);
+              const savedAddress = mostRecentOrder.shipping_address;
+              console.log('📍 Address from order:', savedAddress);
+              
+              if (savedAddress && savedAddress.trim() !== '') {
+                shippingAddressInput.value = savedAddress;
+                console.log('✅ Loaded address from most recent order for user', currentUserId, ':', savedAddress);
+                return true; // Success
+              } else {
+                console.log('⚠️ Most recent order found but no shipping address');
+                return true; // Found order but no address
+              }
+            } else {
+              console.log('ℹ️ No previous orders found for current user', currentUserId);
+              return true; // No orders yet
+            }
+          } catch (err) {
+            console.error('❌ Could not load address from orders:', err);
+            return true; // Silently fail - user can enter manually
+          }
+        } else if (attempts < maxAttempts) {
+          attempts++;
+          setTimeout(tryLoad, 150); // Try again after 150ms
+          return false; // Not ready yet
+        } else {
+          console.log('❌ Shipping address textarea not found after', maxAttempts, 'attempts');
+          return false; // Failed
+        }
+      };
+      
+      await tryLoad();
     }
-    
+
     // Make brand logo non-clickable when logged in
     function updateBrandLogo() {
       const brandLogo = document.querySelector('.brand-logo');
@@ -310,543 +493,37 @@
     if (typeof isAuthed === 'function') {
       updateBrandLogo();
     }
-
-    let orders = [];
-    // currentUserRole is declared in app.js, so we just update it
-    let localCurrentUserId = null;
-    let localCurrentUserRole = 'user'; // Store user role locally
-    let currentSortBy = 'all'; // Sort by status option
-    let currentSortOrder = 'desc';
-
-    async function loadOrders() {
-      const loadingIndicator = document.getElementById('loadingIndicator');
-      const ordersContainer = document.getElementById('ordersContainer');
-      
-      // Show loading indicator BEFORE starting fetch
-      if (loadingIndicator) loadingIndicator.style.display = 'flex';
-      if (ordersContainer) ordersContainer.style.display = 'none';
-      
-      try {
-        // Get current user info to determine role
-        try {
-          const user = await api('/users/me');
-          // Update the global currentUserRole from app.js
-          if (typeof currentUserRole !== 'undefined') {
-            currentUserRole = user.role || 'user';
-          }
-          localCurrentUserId = user.id;
-          localCurrentUserRole = user.role || 'user'; // Store role locally
-          
-          // Debug logging for role detection
-          console.log('User info from /users/me:', {
-            id: user.id,
-            role: user.role,
-            name: user.name,
-            localCurrentUserRole: localCurrentUserRole
-          });
-          
-          // Update page title and subtitle based on role
-          const pageTitle = document.getElementById('pageTitle');
-          const pageSubtitle = document.getElementById('pageSubtitle');
-          if (user.role === 'seller' || user.role === 'admin') {
-            if (pageTitle) pageTitle.textContent = 'Customer Orders';
-            if (pageSubtitle) pageSubtitle.textContent = 'View and manage customer orders';
-          } else {
-            if (pageTitle) pageTitle.textContent = 'My Orders';
-            if (pageSubtitle) pageSubtitle.textContent = 'View your order history';
-          }
-        } catch (e) {
-          console.warn('Could not get user info:', e);
-        }
-        
-        // Build API URL - for sellers/admins, fetch all orders (no filtering by seller)
-        // For regular users, backend will filter by user_id
-        // This ensures all sellers see the same orders
-        const isSellerOrAdmin = localCurrentUserRole === 'seller' || localCurrentUserRole === 'admin';
-        let sortParams = `?sort_by=created_at&sort_order=desc`;
-        // Add parameter to fetch all orders for sellers/admins
-        if (isSellerOrAdmin) {
-          sortParams += '&all=true';
-        }
-        console.log('Fetching orders - User role:', localCurrentUserRole, 'Is seller/admin:', isSellerOrAdmin);
-        console.log('API URL:', '/orders' + sortParams);
-        const response = await api('/orders' + sortParams);
-        console.log('Orders API response:', response);
-        console.log('Response type:', typeof response);
-        console.log('Is array?', Array.isArray(response));
-        console.log('Response keys:', response ? Object.keys(response) : 'null');
-        
-        // Handle different response structures
-        if (Array.isArray(response)) {
-          orders = response;
-        } else if (response && response.orders) {
-          orders = response.orders;
-        } else if (response && Array.isArray(response.data)) {
-          orders = response.data;
-        } else {
-          orders = [];
-        }
-        
-        // Sort orders by status - always do frontend sorting for proper status grouping
-        if (orders.length > 0) {
-          if (currentSortBy === 'all') {
-            // Sort all orders: actionable orders first (grouped by status), then non-actionable
-            const statusPriority = {
-              'pending': 1,      // Has actions (Cancel, Approve/Decline)
-              'confirmed': 2,    // Has actions (Mark as Shipped)
-              'shipped': 3,      // Has actions (Mark as Received)
-              'received': 4,    // Has actions (Mark as Complete)
-              'completed': 10,  // No actions
-              'canceled': 11,   // No actions
-              'declined': 12    // No actions
-            };
-            
-            orders.sort((a, b) => {
-              const aStatus = (a.status || '').toLowerCase();
-              const bStatus = (b.status || '').toLowerCase();
-              
-              const aPriority = statusPriority[aStatus] || 99;
-              const bPriority = statusPriority[bStatus] || 99;
-              
-              // First, sort by priority (actionable first)
-              if (aPriority !== bPriority) {
-                return aPriority - bPriority;
-              }
-              
-              // Same priority (same status group), sort by date
-              const dateA = new Date(a.created_at || 0);
-              const dateB = new Date(b.created_at || 0);
-              return currentSortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-            });
-          } else {
-            // Sort orders: selected status first, then others, all sorted by date within groups
-            const targetStatus = currentSortBy.toLowerCase();
-            
-            // Define status priority order for better sorting
-            const statusPriority = {
-              'pending': 1,
-              'confirmed': 2,
-              'shipped': 3,
-              'received': 4,
-              'completed': 5,
-              'canceled': 6,
-              'declined': 7
-            };
-            
-            orders.sort((a, b) => {
-              const aStatus = (a.status || '').toLowerCase();
-              const bStatus = (b.status || '').toLowerCase();
-              
-              const aMatches = aStatus === targetStatus;
-              const bMatches = bStatus === targetStatus;
-              
-              // If one matches target status and the other doesn't, matching one comes first
-              if (aMatches && !bMatches) return -1;
-              if (!aMatches && bMatches) return 1;
-              
-              // If both match target status, sort by date
-              if (aMatches && bMatches) {
-                const dateA = new Date(a.created_at || 0);
-                const dateB = new Date(b.created_at || 0);
-                return currentSortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-              }
-              
-              // If neither matches, sort by status priority, then by date
-              const aPriority = statusPriority[aStatus] || 99;
-              const bPriority = statusPriority[bStatus] || 99;
-              
-              if (aPriority !== bPriority) {
-                return aPriority - bPriority;
-              }
-              
-              // Same priority, sort by date
-              const dateA = new Date(a.created_at || 0);
-              const dateB = new Date(b.created_at || 0);
-              return currentSortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-            });
-          }
-        }
-        
-        console.log('Orders after parsing:', orders);
-        console.log('Orders length:', orders.length);
-        const userRole = (typeof currentUserRole !== 'undefined') ? currentUserRole : 'user';
-        console.log('Current user ID:', localCurrentUserId);
-        console.log('Current user role:', userRole);
-        
-        // Log debug info if available
-        if (response && response.debug) {
-          console.log('Debug info:', response.debug);
-        }
-        
-        if (!orders || orders.length === 0) {
-          // Only show "Start Shopping" for regular users, not for sellers/admins
-          const isSellerOrAdmin = localCurrentUserRole === 'seller' || localCurrentUserRole === 'admin';
-          const startShoppingBtn = isSellerOrAdmin ? '' : '<a href="books.html" class="nav-link btn-primary" style="display:inline-block; margin-top:1rem;">Start Shopping</a>';
-          document.getElementById('ordersContainer').innerHTML = `
-            <div class="empty-orders">
-              <div class="empty-orders-icon">📦</div>
-              <p>No orders yet</p>
-              ${startShoppingBtn}
-            </div>
-          `;
-          return;
-        }
-
-        renderOrders();
-      } catch (err) {
-        console.error('Failed to load orders:', err);
-        if (err.message && err.message.includes('Unauthorized')) {
-          location.href = 'login.html';
-        }
-      } finally {
-        // Hide loading indicator and show orders
-        if (loadingIndicator) loadingIndicator.style.display = 'none';
-        if (ordersContainer) ordersContainer.style.display = 'block';
-      }
-    }
-
-    function getStatusClass(status) {
-      const statusMap = {
-        'pending': 'status-pending',
-        'confirmed': 'status-confirmed',
-        'shipped': 'status-shipped',
-        'received': 'status-received',
-        'canceled': 'status-canceled',
-        'declined': 'status-declined',
-        'completed': 'status-completed'
-      };
-      return statusMap[status] || 'status-pending';
-    }
-
-    function renderOrders() {
-      const container = document.getElementById('ordersContainer');
-      const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
-      
-      console.log('Rendering orders:', orders);
-      console.log('Number of orders:', orders.length);
-      
-      if (!orders || orders.length === 0) {
-        // Only show "Start Shopping" for regular users, not for sellers/admins
-        const isSellerOrAdmin = localCurrentUserRole === 'seller' || localCurrentUserRole === 'admin';
-        const startShoppingBtn = isSellerOrAdmin ? '' : '<a href="books.html" class="nav-link btn-primary" style="display:inline-block; margin-top:1rem;">Start Shopping</a>';
-        container.innerHTML = `
-          <div class="empty-orders">
-            <div class="empty-orders-icon">📦</div>
-            <p>No orders yet</p>
-            ${startShoppingBtn}
-          </div>
-        `;
-        return;
-      }
-      
-      container.innerHTML = orders.map(order => {
-        console.log('Rendering order:', order);
-        const orderDate = new Date(order.created_at).toLocaleDateString();
-        const statusClass = getStatusClass(order.status);
-        // Use localCurrentUserRole for accurate role detection
-        const userRole = localCurrentUserRole || (typeof currentUserRole !== 'undefined' ? currentUserRole : 'user');
-        // Regular users can cancel/receive their own orders
-        const canCancel = order.status === 'pending' && userRole === 'user';
-        const canReceive = order.status === 'shipped' && userRole === 'user';
-        // Only sellers can manage orders (admins can only view/monitor)
-        const canApprove = order.status === 'pending' && userRole === 'seller';
-        const canDecline = order.status === 'pending' && userRole === 'seller';
-        const canShip = order.status === 'confirmed' && userRole === 'seller';
-        const canMarkComplete = order.status === 'received' && userRole === 'seller';
-        
-        // Handle both camelCase and snake_case for orderItems
-        const orderItems = order.orderItems || order.order_items || [];
-        const itemsHtml = orderItems.map(item => {
-          const book = item.book || {};
-          const imagePath = (book.image_path || 'default.png').replace(/^uploads\//, '');
-          const imageUrl = uploadsUrl + imagePath;
-          
-          return `
-            <div class="order-item">
-              <img src="${imageUrl}" alt="${book.name}" class="order-item-image" onerror="this.src='${uploadsUrl}default.png'">
-              <div class="order-item-details">
-                <div class="order-item-name">${book.name || 'Unknown Book'}</div>
-                <div class="order-item-info">Quantity: ${item.quantity} × ₱${(parseFloat(item.price || 0) || 0).toFixed(2)} = ₱${(parseFloat(item.subtotal || 0) || 0).toFixed(2)}</div>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        // Get user information - handle different possible structures
-        const user = order.user || {};
-        const userName = user.name || 
-                        order.user_name || 
-                        order.buyer_name || 
-                        order.customer_name || 
-                        order.customer?.name ||
-                        (order.user_id ? `User #${order.user_id}` : 'Unknown User');
-        
-        // Debug: Log order structure to help identify user data
-        if (!userName || userName === 'Unknown User') {
-          console.log('Order user data structure:', {
-            order_user: order.user,
-            user_name: order.user_name,
-            buyer_name: order.buyer_name,
-            customer_name: order.customer_name,
-            user_id: order.user_id,
-            full_order: order
-          });
-        }
-        
-        return `
-          <div class="order-card">
-            <div class="order-header">
-              <div>
-                <div class="order-number">${order.order_number}</div>
-                <div class="order-date">Ordered on ${orderDate}</div>
-                <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-top: 0.25rem; font-weight: 500;">
-                  <strong>Customer:</strong> ${userName}
-                </div>
-              </div>
-              <span class="order-status ${statusClass}">${order.status.toUpperCase()}</span>
-            </div>
-            <div class="order-items">${itemsHtml}</div>
-            <div class="order-summary">
-              <div>
-                <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Payment: ${order.payment_method || 'Cash on Delivery'}</div>
-                <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-top: 0.5rem;">Address: ${order.shipping_address}</div>
-              </div>
-              <div class="order-total">₱${(parseFloat(order.total_amount || 0) || 0).toFixed(2)}</div>
-            </div>
-            <div class="order-actions">
-              ${canCancel ? `<button class="action-btn btn-cancel" onclick="cancelOrder(${order.id})">Cancel Order</button>` : ''}
-              ${canReceive ? `<button class="action-btn btn-view" onclick="markAsReceived(${order.id})">Mark as Received</button>` : ''}
-              ${canApprove ? `<button class="action-btn btn-approve" onclick="approveOrder(${order.id})" style="background: linear-gradient(45deg, #10b981, #06b6d4);">Approve Order</button>` : ''}
-              ${canDecline ? `<button class="action-btn btn-decline" onclick="declineOrder(${order.id})" style="background: linear-gradient(45deg, #ef4444, #dc2626);">Decline Order</button>` : ''}
-              ${canShip ? `<button class="action-btn btn-ship" onclick="shipOrder(${order.id})" style="background: linear-gradient(45deg, #3b82f6, #2563eb);">Mark as Shipped</button>` : ''}
-              ${canMarkComplete ? `<button class="action-btn btn-complete" onclick="markAsComplete(${order.id})" style="background: linear-gradient(45deg, #4caf50, #45b7d1);">Mark as Complete</button>` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
-      
-      console.log('Orders rendered successfully');
-    }
-
-    async function cancelOrder(orderId) {
-      const confirmed = window.Swal && typeof Swal.fire === 'function' 
-        ? (await Swal.fire({ icon: 'question', title: 'Cancel Order', text: 'Are you sure you want to cancel this order?', showCancelButton: true })).isConfirmed
-        : confirm('Cancel this order?');
-
-      if (!confirmed) return;
-
-      try {
-        await api(`/orders/${orderId}/cancel`, { method: 'POST' });
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'success', title: 'Order Cancelled', text: 'Your order has been cancelled successfully' });
-        }
-        await loadOrders();
-      } catch (err) {
-        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'error', title: 'Cancel Failed', text: message });
-        }
-      }
-    }
-
-    async function markAsReceived(orderId) {
-      const confirmed = window.Swal && typeof Swal.fire === 'function' 
-        ? (await Swal.fire({ icon: 'question', title: 'Mark as Received', text: 'Have you received this order?', showCancelButton: true })).isConfirmed
-        : confirm('Mark this order as received?');
-
-      if (!confirmed) return;
-
-      try {
-        await api(`/orders/${orderId}/receive`, { method: 'POST' });
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'success', title: 'Order Received', text: 'Order marked as received. Payment status updated to paid.' });
-        }
-        await loadOrders();
-      } catch (err) {
-        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'error', title: 'Update Failed', text: message });
-        }
-      }
-    }
-
-    async function approveOrder(orderId) {
-      const confirmed = window.Swal && typeof Swal.fire === 'function' 
-        ? (await Swal.fire({ icon: 'question', title: 'Approve Order', text: 'Approve this order? Stock will be deducted.', showCancelButton: true })).isConfirmed
-        : confirm('Approve this order? Stock will be deducted.');
-
-      if (!confirmed) return;
-
-      try {
-        await api(`/orders/${orderId}/status`, { method: 'PUT', data: { status: 'confirmed' } });
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'success', title: 'Order Approved', text: 'Order has been approved and stock has been deducted.' });
-        }
-        await loadOrders();
-      } catch (err) {
-        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'error', title: 'Approval Failed', text: message });
-        } else {
-          alert('Failed to approve order: ' + message);
-        }
-      }
-    }
-
-    async function declineOrder(orderId) {
-      const confirmed = window.Swal && typeof Swal.fire === 'function' 
-        ? (await Swal.fire({ icon: 'warning', title: 'Decline Order', text: 'Are you sure you want to decline this order?', showCancelButton: true })).isConfirmed
-        : confirm('Are you sure you want to decline this order?');
-
-      if (!confirmed) return;
-
-      try {
-        await api(`/orders/${orderId}/status`, { method: 'PUT', data: { status: 'declined' } });
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'success', title: 'Order Declined', text: 'Order has been declined.' });
-        }
-        await loadOrders();
-      } catch (err) {
-        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'error', title: 'Decline Failed', text: message });
-        } else {
-          alert('Failed to decline order: ' + message);
-        }
-      }
-    }
-
-    async function shipOrder(orderId) {
-      const confirmed = window.Swal && typeof Swal.fire === 'function' 
-        ? (await Swal.fire({ icon: 'question', title: 'Ship Order', text: 'Mark this order as shipped?', showCancelButton: true })).isConfirmed
-        : confirm('Mark this order as shipped?');
-
-      if (!confirmed) return;
-
-      try {
-        await api(`/orders/${orderId}/status`, { method: 'PUT', data: { status: 'shipped' } });
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'success', title: 'Order Shipped', text: 'Order has been marked as shipped.' });
-        }
-        await loadOrders();
-      } catch (err) {
-        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'error', title: 'Failed', text: message });
-        } else {
-          alert('Failed to ship order: ' + message);
-        }
-      }
-    }
-
-    async function markAsComplete(orderId) {
-      const confirmed = window.Swal && typeof Swal.fire === 'function' 
-        ? (await Swal.fire({ icon: 'question', title: 'Mark as Complete', text: 'Mark this order as completed?', showCancelButton: true })).isConfirmed
-        : confirm('Mark this order as completed?');
-
-      if (!confirmed) return;
-
-      try {
-        await api(`/orders/${orderId}/status`, { method: 'PUT', data: { status: 'completed' } });
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'success', title: 'Order Completed', text: 'Order has been marked as completed.' });
-        }
-        await loadOrders();
-      } catch (err) {
-        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'error', title: 'Failed', text: message });
-        } else {
-          alert('Failed to mark order as complete: ' + message);
-        }
-      }
-    }
-
-    // Sorting controls event listeners
-    const sortBySelect = document.getElementById('sortBy');
-    const sortOrderBtn = document.getElementById('sortOrder');
-    const sortOrderIcon = document.getElementById('sortOrderIcon');
-    const sortOrderText = document.getElementById('sortOrderText');
-
-    if (sortBySelect) {
-      sortBySelect.addEventListener('change', (e) => {
-        currentSortBy = e.target.value;
-        loadOrders();
-      });
-    }
-
-    if (sortOrderBtn) {
-      sortOrderBtn.addEventListener('click', () => {
-        currentSortOrder = currentSortOrder === 'desc' ? 'asc' : 'desc';
-        updateSortOrderUI();
-        loadOrders();
-      });
-    }
-
-    function updateSortOrderUI() {
-      if (sortOrderIcon && sortOrderText) {
-        if (currentSortOrder === 'desc') {
-          sortOrderIcon.textContent = '↓';
-          sortOrderText.textContent = 'Newest First';
-        } else {
-          sortOrderIcon.textContent = '↑';
-          sortOrderText.textContent = 'Oldest First';
-        }
-        if (sortOrderBtn) {
-          sortOrderBtn.classList.toggle('active', true);
-        }
-      }
-    }
-
+    
     // Initialize
-    // Initialize navigation and orders
+    console.log('🚀 Checkout page initializing...');
     if (typeof requireAuth === 'function') {
-      requireAuth().then(() => {
-        // Update navigation after authentication
-        if (typeof setAuthUI === 'function') {
-          setAuthUI(true);
-        }
-        // Get user role and update navigation
-        if (typeof api === 'function') {
-          api('/users/me').then(user => {
-            if (typeof updateNavigationByRole === 'function') {
-              updateNavigationByRole(user.role || 'user');
-            }
-          }).catch(() => {
-            if (typeof updateNavigationByRole === 'function') {
-              updateNavigationByRole('user');
-            }
-          });
-        }
-        updateSortOrderUI();
-        loadOrders();
+      console.log('🔐 Using requireAuth()');
+      requireAuth().then(async () => {
+        console.log('✅ Auth confirmed, loading data...');
+        loadCart();
+        await loadUserInfo();
+        setupContactNumberValidation();
+        console.log('📍 About to load saved address...');
+        await loadSavedAddress(); // Load after auth is confirmed
         if (typeof updateCartBadge === 'function') updateCartBadge();
       });
     } else {
       // Check if user is logged in
       if (typeof isAuthed === 'function' && isAuthed()) {
-        if (typeof setAuthUI === 'function') {
-          setAuthUI(true);
-        }
-        if (typeof api === 'function') {
-          api('/users/me').then(user => {
-            if (typeof updateNavigationByRole === 'function') {
-              updateNavigationByRole(user.role || 'user');
-            }
-          }).catch(() => {
-            if (typeof updateNavigationByRole === 'function') {
-              updateNavigationByRole('user');
-            }
-          });
-        }
+        console.log('✅ User is authenticated (isAuthed check)');
+        loadCart();
+        loadUserInfo().then(() => {
+          console.log('📍 About to load saved address...');
+          loadSavedAddress(); // Load after user info is loaded
+        });
+        setupContactNumberValidation();
+        if (typeof updateCartBadge === 'function') updateCartBadge();
       } else {
-        if (typeof setAuthUI === 'function') {
-          setAuthUI(false);
-        }
+        console.log('ℹ️ User not authenticated');
+        loadCart();
+        setupContactNumberValidation();
+        if (typeof updateCartBadge === 'function') updateCartBadge();
       }
-      updateSortOrderUI();
-      loadOrders();
-      if (typeof updateCartBadge === 'function') updateCartBadge();
     }
   </script>
 </body>
