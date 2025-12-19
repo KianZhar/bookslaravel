@@ -362,26 +362,39 @@
     // Load recent shipping address from the most recent order of the current user
     async function loadRecentShippingAddress() {
       try {
+        console.log('loadRecentShippingAddress: Starting...');
         const shippingAddressTextarea = document.querySelector('textarea[name="shipping_address"]');
-        if (!shippingAddressTextarea) return;
+        if (!shippingAddressTextarea) {
+          console.log('loadRecentShippingAddress: Shipping address textarea not found');
+          return;
+        }
         
         // Only fill if the field is empty (don't overwrite if user already typed something)
-        if (shippingAddressTextarea.value.trim() !== '') return;
+        if (shippingAddressTextarea.value.trim() !== '') {
+          console.log('loadRecentShippingAddress: Field already has value, skipping');
+          return;
+        }
         
         // Get current user ID first
         let currentUserId = null;
         try {
           const currentUser = await api('/users/me');
           currentUserId = currentUser.id;
+          console.log('loadRecentShippingAddress: Current user ID:', currentUserId);
         } catch (err) {
-          console.error('Failed to get current user:', err);
+          console.error('loadRecentShippingAddress: Failed to get current user:', err);
           return; // Can't proceed without user ID
         }
         
-        if (!currentUserId) return;
+        if (!currentUserId) {
+          console.log('loadRecentShippingAddress: No user ID, aborting');
+          return;
+        }
         
-        // Fetch orders sorted by created_at descending (backend should filter by user_id for regular users)
+        // Fetch orders sorted by created_at descending (backend filters by user_id for regular users)
+        console.log('loadRecentShippingAddress: Fetching orders...');
         const response = await api('/orders?sort_by=created_at&sort_order=desc');
+        console.log('loadRecentShippingAddress: Orders response:', response);
         
         // Handle different response structures
         let orders = [];
@@ -393,20 +406,36 @@
           orders = response.data;
         }
         
-        // Filter orders to only include orders from the current user (based on user_id)
+        console.log('loadRecentShippingAddress: Parsed orders:', orders);
+        console.log('loadRecentShippingAddress: Number of orders:', orders.length);
+        
+        // Filter orders to only include orders from the current user (based on user_id from database)
+        // Convert currentUserId to number for comparison
+        const currentUserIdNum = parseInt(currentUserId);
         const userOrders = orders.filter(order => {
-          // Check both user_id and order.user.id (if user object is included)
-          return (order.user_id === currentUserId) || 
-                 (order.user && order.user.id === currentUserId) ||
-                 (order.user_id && parseInt(order.user_id) === parseInt(currentUserId));
+          // Check user_id field directly from database
+          const orderUserId = order.user_id;
+          const matches = orderUserId && (
+            parseInt(orderUserId) === currentUserIdNum
+          );
+          if (matches) {
+            console.log('loadRecentShippingAddress: Found matching order ID:', order.id, 'user_id:', order.user_id, 'shipping_address:', order.shipping_address);
+          }
+          return matches;
         });
+        
+        console.log('loadRecentShippingAddress: Filtered user orders:', userOrders);
+        console.log('loadRecentShippingAddress: Number of user orders:', userOrders.length);
         
         // Get the most recent order from the current user
         if (userOrders && userOrders.length > 0 && userOrders[0].shipping_address) {
           shippingAddressTextarea.value = userOrders[0].shipping_address;
+          console.log('loadRecentShippingAddress: Auto-filled shipping address:', userOrders[0].shipping_address);
+        } else {
+          console.log('loadRecentShippingAddress: No orders with shipping address found for user');
         }
       } catch (err) {
-        console.error('Failed to load recent shipping address:', err);
+        console.error('loadRecentShippingAddress: Failed to load recent shipping address:', err);
         // Silently fail - user can still enter shipping address manually
       }
     }
@@ -448,21 +477,28 @@
     }
     
     // Initialize
-    if (typeof requireAuth === 'function') {
-      requireAuth().then(() => {
-        loadCart();
-        loadUserInfo();
-        loadRecentShippingAddress();
-        setupContactNumberValidation();
-        if (typeof updateCartBadge === 'function') updateCartBadge();
-      });
-    } else {
+    async function initializeCheckout() {
+      if (typeof requireAuth === 'function') {
+        await requireAuth();
+      }
+      
+      // Wait for DOM to be ready
+      if (document.readyState === 'loading') {
+        await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+      }
+      
       loadCart();
       loadUserInfo();
-      loadRecentShippingAddress();
+      // Load shipping address after a small delay to ensure user info is loaded
+      setTimeout(() => {
+        loadRecentShippingAddress();
+      }, 500);
       setupContactNumberValidation();
       if (typeof updateCartBadge === 'function') updateCartBadge();
     }
+    
+    // Run initialization
+    initializeCheckout();
   </script>
 </body>
 </html>
