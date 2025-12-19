@@ -821,73 +821,6 @@ if (addForm && (tblBody || booksGrid)) {
               if (input) {
                 input.focus();
                 input.select();
-                // Prevent empty field on backspace/delete - use beforeinput for better control
-                input.addEventListener('beforeinput', function(e) {
-                  if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') {
-                    const currentValue = this.value;
-                    const selectionStart = this.selectionStart || 0;
-                    const selectionEnd = this.selectionEnd || 0;
-                    const selectedText = currentValue.substring(selectionStart, selectionEnd);
-                    
-                    // Calculate what the value would be after deletion
-                    let newValue = '';
-                    if (selectionStart === selectionEnd) {
-                      // No selection - cursor position
-                      if (e.inputType === 'deleteContentBackward' && selectionStart > 0) {
-                        // Backspace: remove character before cursor
-                        newValue = currentValue.substring(0, selectionStart - 1) + currentValue.substring(selectionStart);
-                      } else if (e.inputType === 'deleteContentForward' && selectionStart < currentValue.length) {
-                        // Delete: remove character after cursor
-                        newValue = currentValue.substring(0, selectionStart) + currentValue.substring(selectionStart + 1);
-                      } else {
-                        newValue = currentValue;
-                      }
-                    } else {
-                      // Text is selected - remove selected text
-                      newValue = currentValue.substring(0, selectionStart) + currentValue.substring(selectionEnd);
-                    }
-                    
-                    // If result would be empty, prevent and set to 1
-                    if (newValue.trim() === '' || newValue.length === 0) {
-                      e.preventDefault();
-                      this.value = '1';
-                      // Set cursor position after setting value
-                      setTimeout(() => {
-                        this.setSelectionRange(1, 1);
-                      }, 0);
-                      return;
-                    }
-                  }
-                });
-                
-                // Also handle keydown as fallback
-                input.addEventListener('keydown', function(e) {
-                  if (e.keyCode === 8 || e.keyCode === 46) {
-                    const currentValue = this.value;
-                    const selectionStart = this.selectionStart || 0;
-                    const selectionEnd = this.selectionEnd || 0;
-                    
-                    // If all text is selected, prevent deletion
-                    if (selectionStart === 0 && selectionEnd === currentValue.length && currentValue.length > 0) {
-                      e.preventDefault();
-                      this.value = '1';
-                      setTimeout(() => {
-                        this.setSelectionRange(1, 1);
-                      }, 0);
-                      return;
-                    }
-                    
-                    // If only one character and cursor is at start (backspace) or end (delete)
-                    if (currentValue.length === 1) {
-                      e.preventDefault();
-                      this.value = '1';
-                      setTimeout(() => {
-                        this.setSelectionRange(1, 1);
-                      }, 0);
-                      return;
-                    }
-                  }
-                });
                 // Add numeric-only validation
                 input.addEventListener('keypress', function(e) {
                   if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
@@ -909,16 +842,6 @@ if (addForm && (tblBody || booksGrid)) {
                   if (value !== numericValue) {
                     this.value = numericValue;
                     Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Only numbers are allowed. Letters have been removed.', timer: 2000, showConfirmButton: false });
-                  }
-                  // Prevent empty field - if empty or becomes empty, set to 1
-                  if (this.value === '' || this.value.length === 0 || this.value.trim() === '') {
-                    this.value = '1';
-                    this.setSelectionRange(1, 1);
-                  }
-                  // Ensure minimum value of 1
-                  const numValue = parseInt(this.value) || 1;
-                  if (numValue < 1) {
-                    this.value = '1';
                   }
                 });
               }
