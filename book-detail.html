@@ -289,12 +289,12 @@
               alert('Only numbers are allowed. Letters have been removed.');
             }
           }
-          // Clamp value
+          // Clamp value and prevent blank
           const numValue = parseInt(this.value) || 0;
-          if (numValue > maxQuantity) {
-            this.value = maxQuantity;
-          } else if (numValue < 1 && this.value !== '') {
+          if (this.value === '' || numValue < 1) {
             this.value = 1;
+          } else if (numValue > maxQuantity) {
+            this.value = maxQuantity;
           }
         });
         
@@ -304,6 +304,13 @@
           if (value > maxQuantity) {
             this.value = maxQuantity;
           } else if (value < 1) {
+            this.value = 1;
+          }
+        });
+        
+        // Blur event: ensure minimum value of 1 if empty
+        quantityInput.addEventListener('blur', function() {
+          if (this.value === '' || parseInt(this.value) < 1) {
             this.value = 1;
           }
         });
