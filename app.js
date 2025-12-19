@@ -124,19 +124,13 @@ async function api(path, { method = 'GET', data, multipart } = {}) {
           }
         }
         
-        // Extract error data and include status
+        // Extract error data
         let errorData;
         try {
           errorData = xhr.responseJSON || JSON.parse(xhr.responseText);
         } catch (e) {
           errorData = { message: xhr.responseText || 'Request failed' };
         }
-        
-        // Include status code and other xhr properties in error object
-        errorData.status = xhr.status;
-        errorData.statusText = xhr.statusText;
-        errorData.responseText = xhr.responseText;
-        
         reject(errorData);
       });
   });
