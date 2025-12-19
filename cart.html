@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Content-Security-Policy" content="default-src * 'self' data: gap: 'unsafe-inline' 'unsafe-eval'; style-src * 'self' 'unsafe-inline'; media-src *; img-src * 'self' data:; connect-src * 'self';" />
-  <title>Cart - Book Store</title>
+  <title>Checkout - Book Store</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/mobile-responsive.css">
   <style>
@@ -48,52 +48,23 @@
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .page-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; text-align: center; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .page-subtitle { font-size: 1.1rem; color: rgba(255,255,255,0.7); text-align:center; margin-bottom: 2rem; }
-    .cart-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
-    .cart-item { display: flex; gap: 1.5rem; padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center; }
-    .cart-item:last-child { border-bottom: none; }
-    .cart-item-checkbox { width: 24px; height: 24px; cursor: pointer; accent-color: var(--accent-b); flex-shrink: 0; }
-    .cart-item-image { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.06); }
-    .select-all-container { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 1rem; }
-    .select-all-checkbox { width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-b); }
-    .select-all-label { font-weight: 600; color: rgba(255,255,255,0.9); cursor: pointer; }
-    .cart-item-details { flex: 1; }
-    .cart-item-name { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: #fff; }
-    .cart-item-price { color: rgba(255,255,255,0.7); font-size: 0.95rem; }
-    .cart-item-quantity { display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem; }
-    .quantity-input { width: 60px; padding: 0.5rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; color: #fff; text-align: center; }
-    .quantity-btn { padding: 0.4rem 0.8rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #fff; cursor: pointer; }
-    .quantity-btn:hover { background: rgba(255,255,255,0.1); }
-    .cart-item-subtotal { font-size: 1.2rem; font-weight: 600; color: var(--accent-b); min-width: 100px; text-align: right; }
-    .remove-btn { padding: 0.5rem 1rem; background: linear-gradient(90deg, rgba(227,52,47,0.95), rgba(235,80,70,0.95)); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-weight: 600; }
-    .remove-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(227,52,47,0.3); }
-    .cart-summary { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 1.5rem; margin-top: 2rem; }
-    .summary-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .summary-row:last-child { border-bottom: none; font-size: 1.3rem; font-weight: 700; color: var(--accent-b); }
-    .checkout-btn { width: 100%; padding: 1rem 2rem; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); border: none; border-radius: 12px; color: #fff; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; }
-    .checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 107, 107, 0.3); }
-    .checkout-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .checkout-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 2rem; margin-top: 2rem; display: none; }
-    .checkout-box.show { display: block; animation: fadeInUp 0.5s ease-out; }
-    .checkout-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--accent-b); }
-    .checkout-form { display: grid; gap: 1.5rem; }
-    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .form-label { font-weight: 500; color: rgba(255,255,255,0.9); font-size: 0.95rem; }
-    .form-input, .form-textarea, .form-select { padding: 0.75rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; color: #fff; font-size: 1rem; font-family: inherit; transition: all 0.3s ease; }
-    .form-textarea { min-height: 100px; resize: vertical; }
-    .form-input:focus, .form-textarea:focus, .form-select:focus { outline: none; border-color: var(--accent-b); background: rgba(255,255,255,0.05); box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1); }
-    .form-input::placeholder, .form-textarea::placeholder { color: rgba(255,255,255,0.4); }
-    .payment-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 0.5rem; }
-    .payment-option { padding: 1rem; background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.06); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-align: center; }
-    .payment-option:hover { background: rgba(255,255,255,0.05); border-color: var(--accent-b); }
-    .payment-option input[type="radio"] { display: none; }
-    .payment-option input[type="radio"]:checked + label { color: var(--accent-b); }
-    .payment-option:has(input[type="radio"]:checked) { border-color: var(--accent-b); background: rgba(78, 205, 196, 0.1); }
-    .payment-option label { cursor: pointer; font-weight: 500; display: block; }
-    .place-order-btn { width: 100%; padding: 1rem 2rem; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); border: none; border-radius: 12px; color: #fff; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 1rem; }
+    .checkout-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .checkout-form { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 2rem; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.9); font-weight: 500; }
+    .form-input, .form-textarea { width: 100%; padding: 1rem 1.25rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; color: #fff; font-size: 1rem; font-family: inherit; }
+    .form-textarea { min-height: 120px; resize: vertical; }
+    .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent-b); background: rgba(255,255,255,0.05); }
+    .order-summary-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; padding: 2rem; position: sticky; top: 120px; }
+    .summary-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--accent-b); }
+    .summary-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .summary-item:last-child { border-bottom: none; font-size: 1.3rem; font-weight: 700; color: var(--accent-b); margin-top: 1rem; }
+    .payment-info { background: rgba(78, 205, 196, 0.1); border: 1px solid rgba(78, 205, 196, 0.2); border-radius: 8px; padding: 1rem; margin-top: 1.5rem; }
+    .payment-info-title { font-weight: 600; color: var(--accent-b); margin-bottom: 0.5rem; }
+    .payment-info-text { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+    .place-order-btn { width: 100%; padding: 1rem 2rem; background: linear-gradient(45deg, var(--accent-a), var(--accent-b)); border: none; border-radius: 12px; color: #fff; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; }
     .place-order-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255, 107, 107, 0.3); }
     .place-order-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .empty-cart { text-align: center; padding: 4rem 2rem; color: rgba(255,255,255,0.6); }
-    .empty-cart-icon { font-size: 4rem; margin-bottom: 1rem; }
     .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-0); z-index: 9999; display:flex; justify-content:center; align-items:center; }
     .loading-indicator { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; min-height: 200px; }
     .loader { width:50px; height:50px; border:3px solid rgba(255,255,255,0.08); border-top:3px solid var(--accent-a); border-radius:50%; animation: spin 1s linear infinite; }
@@ -103,42 +74,19 @@
     .cart-badge { position: relative; }
     .cart-badge-count { position: absolute; top: -8px; right: -8px; background: var(--accent-a); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
     
+    @media (max-width:968px) {
+      .checkout-container { grid-template-columns: 1fr; }
+      .order-summary-card { position: static; }
+    }
+    
     @media (max-width:768px) {
-      .cart-item { flex-direction: column; text-align: center; }
-      .cart-item-image { width: 120px; height: 120px; }
-      .cart-item-quantity { justify-content: center; }
-      .cart-item-subtotal { text-align: center; margin-top: 1rem; }
-      .checkout-box { padding: 1.5rem; }
-      .checkout-title { font-size: 1.3rem; }
-      .payment-options { grid-template-columns: 1fr; }
       .hamburger { display: block; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); }
       .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
       .hamburger.active span:nth-child(2) { opacity: 0; }
       .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
-      .nav-links { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 5rem 2rem 2rem; gap: 0.5rem; transition: right 0.3s ease; border-left: 1px solid rgba(255,255,255,0.1); z-index: 999; }
+      .nav-links { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 5rem 2rem 2rem; gap: 0.5rem; transition: right 0.3s ease; border-left: 1px solid rgba(255,255,255,0.1); }
       .nav-links.active { right: 0; }
       .nav-link { width: 100%; text-align: left; padding: 1rem; border-radius: 8px; }
-      
-      /* Ensure auth-only elements are visible in mobile menu when logged in */
-      .nav-links.active .auth-only {
-        display: block !important;
-      }
-      .nav-links.active .guest-only {
-        display: none !important;
-      }
-      
-      /* Overlay for mobile menu */
-      .nav-overlay { 
-        display: none;
-        position: fixed; 
-        top: 0; 
-        left: 0; 
-        width: 100%; 
-        height: 100%; 
-        background: rgba(0,0,0,0.7); 
-        z-index: 998; 
-      }
-      .nav-overlay.active { display: block; }
     }
   </style>
 </head>
@@ -167,88 +115,57 @@
         <div class="nav-group">
           <a href="index.html" class="nav-link hide-for-admin">Home</a>
           <a href="books.html" class="nav-link">Books</a>
-          <a href="cart.html" class="nav-link cart-badge user-only active">
+          <a href="cart.html" class="nav-link cart-badge user-only">
             Cart
             <span class="cart-badge-count" id="cartBadge" style="display:none;">0</span>
           </a>
           <a href="orders.html" class="nav-link">Orders</a>
           <a href="users.html" class="nav-link admin-only" style="display:none;">Users</a>
-          <a href="profile.html" class="nav-link auth-only">Profile</a>
-          <button class="nav-link auth-only btn-secondary" id="logoutBtn">Logout</button>
+          <a href="profile.html" class="nav-link">Profile</a>
+          <button class="nav-link auth-only" id="btnLogout" style="display:none;">Logout</button>
           <a href="login.html" class="nav-link guest-only">Login</a>
+          <a href="register.html" class="nav-link guest-only btn-primary">Register</a>
         </div>
       </div>
     </div>
   </nav>
-  <div class="nav-overlay" id="navOverlay"></div>
 
   <div class="main-content">
-    <h1 class="page-title">Shopping Cart</h1>
-    <p class="page-subtitle">Review your items before checkout</p>
+    <h1 class="page-title">Checkout</h1>
+    <p class="page-subtitle">Complete your order</p>
 
-    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
-      <div class="loader"></div>
-      <p style="margin-top: 1rem; color: rgba(255,255,255,0.7);">Loading cart...</p>
-    </div>
-    
-    <div id="selectAllContainer" style="display:none;">
-      <div class="select-all-container">
-        <input type="checkbox" id="selectAllCheckbox" class="select-all-checkbox" checked>
-        <label for="selectAllCheckbox" class="select-all-label">Select All</label>
+    <div class="checkout-container">
+      <div class="checkout-form">
+        <h2 style="margin-bottom: 1.5rem; color: var(--accent-b);">Shipping Information</h2>
+        <form id="checkoutForm">
+          <div class="form-group">
+            <label class="form-label">Shipping Address *</label>
+            <textarea name="shipping_address" class="form-textarea" placeholder="Enter your complete shipping address" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Number *</label>
+            <input type="text" name="contact_number" class="form-input" placeholder="e.g. +1234567890" inputmode="numeric" required>
+          </div>
+          <div class="payment-info">
+            <div class="payment-info-title">💳 Payment Method</div>
+            <div class="payment-info-text">Cash on Delivery - Pay when you receive your order</div>
+          </div>
+        </form>
       </div>
-    </div>
 
-    <div id="cartContainer" style="display: none;"></div>
-
-    <div id="cartSummary" style="display:none;">
-      <div class="cart-summary">
-        <div class="summary-row">
-          <span>Subtotal</span>
-          <span id="subtotal">₱0.00</span>
+      <div class="order-summary-card">
+        <h3 class="summary-title">Order Summary</h3>
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+          <div class="loader"></div>
+          <p style="margin-top: 1rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">Loading order...</p>
         </div>
-        <div class="summary-row">
+        <div id="orderItems"></div>
+        <div class="summary-item">
           <span>Total</span>
-          <span id="total">₱0.00</span>
+          <span id="orderTotal">₱0.00</span>
         </div>
-        <button class="checkout-btn" id="checkoutBtn">Proceed to Checkout</button>
+        <button class="place-order-btn" id="placeOrderBtn">Place Order</button>
       </div>
-    </div>
-
-    <div id="checkoutBox" class="checkout-box">
-      <h2 class="checkout-title">Checkout</h2>
-      <form id="checkoutForm" class="checkout-form">
-        <div class="form-group">
-          <label class="form-label" for="shippingAddress">Shipping Address *</label>
-          <textarea id="shippingAddress" name="shipping_address" class="form-textarea" placeholder="Enter your complete shipping address" required></textarea>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label" for="contactNumber">Contact Number *</label>
-          <input type="text" id="contactNumber" name="contact_number" class="form-input" placeholder="e.g. 09123456789" inputmode="numeric" required>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Payment Method</label>
-          <div class="payment-info" style="margin-top: 0.5rem;">
-            <div class="payment-info-title">💳 Cash on Delivery</div>
-            <div class="payment-info-text">Pay when you receive your order</div>
-          </div>
-          <input type="hidden" name="paymentMethod" value="cash_on_delivery">
-        </div>
-
-        <div class="cart-summary" style="margin-top: 1rem;">
-          <div class="summary-row">
-            <span>Subtotal</span>
-            <span id="checkoutSubtotal">₱0.00</span>
-          </div>
-          <div class="summary-row">
-            <span>Total</span>
-            <span id="checkoutTotal">₱0.00</span>
-          </div>
-        </div>
-
-        <button type="submit" class="place-order-btn" id="placeOrderBtn">Place Order</button>
-      </form>
     </div>
   </div>
 
@@ -258,538 +175,168 @@
   <script src="app.js"></script>
   <script>
     // Mobile menu toggle
-    (function() {
-      const hamburger = document.getElementById('hamburger');
-      const navLinks = document.getElementById('navLinks');
-      const navOverlay = document.getElementById('navOverlay');
-      
-      if (!hamburger || !navLinks || !navOverlay) return;
-      
-      function toggleMenu() {
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
         hamburger.classList.toggle('active');
         navLinks.classList.toggle('active');
-        navOverlay.classList.toggle('active');
-        document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
-        
-        // Ensure auth-only elements are visible when menu opens
-        if (navLinks.classList.contains('active') && typeof isAuthed === 'function' && isAuthed()) {
-          navLinks.querySelectorAll('.auth-only').forEach(el => {
-            el.style.display = '';
-          });
-          navLinks.querySelectorAll('.guest-only').forEach(el => {
-            el.style.display = 'none';
-          });
-        }
-      }
-      
-      hamburger.addEventListener('click', toggleMenu);
-      navOverlay.addEventListener('click', toggleMenu);
-      
-      // Close menu when clicking on a link
-      navLinks.querySelectorAll('.nav-link, a').forEach(link => {
-        link.addEventListener('click', () => {
-          if (navLinks.classList.contains('active')) {
-            toggleMenu();
-          }
-        });
       });
-    })();
-
-    // Initialize navigation immediately on page load
-    function initializeNavigation() {
-      if (typeof setAuthUI === 'function' && typeof isAuthed === 'function') {
-        const isLoggedIn = isAuthed();
-        setAuthUI(isLoggedIn);
-        
-        // Ensure auth-only elements are visible if logged in
-        if (isLoggedIn) {
-          document.querySelectorAll('.auth-only').forEach(el => {
-            el.style.display = '';
-          });
-          document.querySelectorAll('.guest-only').forEach(el => {
-            el.style.display = 'none';
-          });
-        }
-      }
-    }
-    
-    // Run immediately and also on DOM ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeNavigation);
-    } else {
-      initializeNavigation();
-    }
-    
-    // Make brand logo non-clickable when logged in
-    function updateBrandLogo() {
-      const brandLogo = document.querySelector('.brand-logo');
-      if (brandLogo && typeof isAuthed === 'function') {
-        if (isAuthed()) {
-          // User is logged in - make it non-clickable
-          if (brandLogo.tagName === 'A') {
-            const text = brandLogo.textContent;
-            const parent = brandLogo.parentNode;
-            const span = document.createElement('span');
-            span.className = brandLogo.className;
-            span.textContent = text;
-            span.style.cursor = 'default';
-            span.style.textDecoration = 'none';
-            parent.replaceChild(span, brandLogo);
-          }
-        } else {
-          // User is not logged in - make it clickable
-          if (brandLogo.tagName !== 'A') {
-            const text = brandLogo.textContent;
-            const parent = brandLogo.parentNode;
-            const link = document.createElement('a');
-            link.className = brandLogo.className;
-            link.href = 'index.html';
-            link.textContent = text;
-            parent.replaceChild(link, brandLogo);
-          }
-        }
-      }
-    }
-    
-    // Update brand logo on page load
-    if (typeof isAuthed === 'function') {
-      updateBrandLogo();
     }
 
-    // Check if user is seller/admin and redirect them
-    async function checkUserRoleAndRedirect() {
-      try {
-        if (typeof isAuthed === 'function' && isAuthed()) {
-          const user = await api('/users/me');
-          if (user && (user.role === 'seller' || user.role === 'admin')) {
-            // Sellers and admins should not access cart - redirect to orders
-            if (window.Swal && typeof Swal.fire === 'function') {
-              Swal.fire({ 
-                icon: 'warning', 
-                title: 'Access Denied', 
-                text: user.role === 'seller' 
-                  ? 'Sellers can only approve/decline orders. Redirecting to orders page...' 
-                  : 'Admins can only view orders. Redirecting to orders page...',
-                timer: 2000,
-                showConfirmButton: false
-              }).then(() => {
-                location.href = 'orders.html';
-              });
-            } else {
-              alert(user.role === 'seller' 
-                ? 'Sellers can only approve/decline orders. Redirecting...' 
-                : 'Admins can only view orders. Redirecting...');
-              location.href = 'orders.html';
-            }
-            return false; // Stop execution
-          }
-        }
-        return true; // Continue execution
-      } catch (err) {
-        console.error('Error checking user role:', err);
-        return true; // Continue execution on error
-      }
-    }
-
-    // Cart functionality
     let cartItems = [];
+    let cartTotal = 0;
 
     async function loadCart() {
       const loadingIndicator = document.getElementById('loadingIndicator');
-      const cartContainer = document.getElementById('cartContainer');
-      const selectAllContainer = document.getElementById('selectAllContainer');
+      const orderItems = document.getElementById('orderItems');
       
       // Show loading indicator BEFORE starting fetch
       if (loadingIndicator) loadingIndicator.style.display = 'flex';
-      if (cartContainer) cartContainer.style.display = 'none';
-      if (selectAllContainer) selectAllContainer.style.display = 'none';
+      if (orderItems) orderItems.style.display = 'none';
       
       try {
-        console.log('Loading cart...');
         const response = await api('/cart');
-        console.log('Cart response:', response);
-        console.log('Response type:', typeof response);
-        console.log('Is array?', Array.isArray(response));
-        
-        // Handle different response structures
-        if (Array.isArray(response)) {
-          cartItems = response;
-        } else if (response && response.items) {
-          cartItems = response.items;
-        } else if (response && Array.isArray(response.data)) {
-          cartItems = response.data;
-        } else {
-          cartItems = [];
-        }
-        
-        console.log('Cart items after parsing:', cartItems);
-        console.log('Cart items length:', cartItems.length);
-        
-        if (!cartItems || cartItems.length === 0) {
-          document.getElementById('cartContainer').innerHTML = `
-            <div class="empty-cart">
-              <div class="empty-cart-icon">🛒</div>
-              <p>Your cart is empty</p>
-              <a href="books.html" class="nav-link btn-primary" style="display:inline-block; margin-top:1rem;">Browse Books</a>
-            </div>
-          `;
-          document.getElementById('cartSummary').style.display = 'none';
+        cartItems = response.items || [];
+        cartTotal = parseFloat(response.total || 0);
+
+        if (cartItems.length === 0) {
+          if (window.Swal && typeof Swal.fire === 'function') {
+            Swal.fire({ icon: 'warning', title: 'Empty Cart', text: 'Your cart is empty. Redirecting to books...' });
+          }
+          setTimeout(() => location.href = 'books.html', 2000);
           return;
         }
 
-        renderCart();
-        const total = response.total || (response && response.total_amount) || '0.00';
-        updateSummary(total);
-        document.getElementById('cartSummary').style.display = 'block';
-        // Show select all container when there are items
-        if (cartItems.length > 0) {
-          document.getElementById('selectAllContainer').style.display = 'block';
-        } else {
-          document.getElementById('selectAllContainer').style.display = 'none';
-        }
+        renderOrderSummary();
       } catch (err) {
         console.error('Failed to load cart:', err);
-        const errorMessage = err && err.message ? err.message : JSON.stringify(err, null, 2);
-        console.error('Error details:', err);
+        // Check if error is 403 (Forbidden) - means user is seller/admin
+        const status = err.status || (err.response && err.response.status);
+        const message = err.message || (err.response && err.response.message) || JSON.stringify(err);
         
-        if (errorMessage.includes('Unauthorized') || errorMessage.includes('401')) {
+        if (status === 403 || (message && (message.includes('Forbidden') || message.includes('only available for regular users')))) {
+          // User is seller/admin - redirect to orders
+          if (window.Swal && typeof Swal.fire === 'function') {
+            Swal.fire({ 
+              icon: 'warning', 
+              title: 'Access Denied', 
+              text: 'Sellers and admins cannot access cart. Redirecting to orders page...',
+              timer: 2000,
+              showConfirmButton: false
+            }).then(() => {
+              location.href = 'orders.html';
+            });
+          } else {
+            alert('Sellers and admins cannot access cart. Redirecting...');
+            location.href = 'orders.html';
+          }
+          return;
+        }
+        
+        if (err.message && err.message.includes('Unauthorized')) {
           location.href = 'login.html';
-        } else if (errorMessage.includes('Forbidden') || errorMessage.includes('403')) {
-          document.getElementById('cartContainer').innerHTML = `
-            <div class="empty-cart">
-              <div class="empty-cart-icon">🚫</div>
-              <p>Cart is only available for regular users.</p>
-              <p style="margin-top:0.5rem; color:rgba(255,255,255,0.7);">Admin and Seller accounts cannot use the cart.</p>
-            </div>
-          `;
-          document.getElementById('cartSummary').style.display = 'none';
-        } else {
-          document.getElementById('cartContainer').innerHTML = `
-            <div class="empty-cart">
-              <div class="empty-cart-icon">⚠️</div>
-              <p>Failed to load cart</p>
-              <p style="margin-top:0.5rem; color:rgba(255,255,255,0.7); font-size:0.9rem;">${errorMessage}</p>
-            </div>
-          `;
         }
       } finally {
-        // Hide loading indicator and show cart
+        // Hide loading indicator and show order items
         if (loadingIndicator) loadingIndicator.style.display = 'none';
-        if (cartContainer) cartContainer.style.display = 'block';
+        if (orderItems) orderItems.style.display = 'block';
       }
     }
 
-    function renderCart() {
-      const container = document.getElementById('cartContainer');
-      const selectAllContainer = document.getElementById('selectAllContainer');
+    function renderOrderSummary() {
+      const container = document.getElementById('orderItems');
       const uploadsUrl = window.CONFIG ? window.CONFIG.UPLOADS_URL : 'http://localhost:8000/uploads/';
       
-      console.log('Rendering cart with items:', cartItems);
-      
-      if (!cartItems || cartItems.length === 0) {
-        container.innerHTML = `
-          <div class="empty-cart">
-            <div class="empty-cart-icon">🛒</div>
-            <p>Your cart is empty</p>
-            <a href="books.html" class="nav-link btn-primary" style="display:inline-block; margin-top:1rem;">Browse Books</a>
-          </div>
-        `;
-        if (selectAllContainer) selectAllContainer.style.display = 'none';
-        return;
-      }
-      
-      if (selectAllContainer) selectAllContainer.style.display = 'block';
-      
       container.innerHTML = cartItems.map(item => {
-        console.log('Rendering item:', item);
-        const book = item.book || item.book_id || {};
-        const imagePath = (book.image_path || book.imagePath || 'default.png').replace(/^uploads\//, '');
-        const imageUrl = uploadsUrl + imagePath;
-        // Ensure price is a number
+        const book = item.book || {};
         const bookPrice = parseFloat(book.price || 0) || 0;
         const subtotal = (item.quantity * bookPrice).toFixed(2);
         
         return `
-          <div class="cart-item" data-id="${item.id}">
-            <input type="checkbox" class="cart-item-checkbox" data-cart-id="${item.id}" checked onchange="updateSelectedItems()">
-            <img src="${imageUrl}" alt="${book.name}" class="cart-item-image" onerror="this.src='${uploadsUrl}default.png'">
-            <div class="cart-item-details">
-              <div class="cart-item-name">${book.name || 'Unknown Book'}</div>
-              <div class="cart-item-price">₱${bookPrice.toFixed(2)} each</div>
-              <div class="cart-item-quantity">
-                <button class="quantity-btn" onclick="updateQuantity(${item.id}, ${item.quantity - 1})">-</button>
-                <input type="number" class="quantity-input" value="${item.quantity}" min="1" 
-                       inputmode="numeric"
-                       onchange="updateQuantity(${item.id}, parseInt(this.value))">
-                <button class="quantity-btn" onclick="updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
-                <button class="remove-btn" onclick="removeItem(${item.id})">Remove</button>
-              </div>
-            </div>
-            <div class="cart-item-subtotal">₱${subtotal}</div>
+          <div class="summary-item">
+            <span>${book.name || 'Unknown'} × ${item.quantity}</span>
+            <span>₱${subtotal}</span>
           </div>
         `;
       }).join('');
-      
-      // Setup select all functionality
-      setupSelectAll();
-      updateSelectedItems();
-      
-      // Add numeric-only validation to quantity inputs
-      setupNumericInputs();
-    }
-    
-    // Function to setup numeric-only validation for inputs
-    function setupNumericInputs() {
-      const quantityInputs = document.querySelectorAll('.quantity-input');
-      quantityInputs.forEach(input => {
-        // Prevent empty field on backspace/delete - use beforeinput for better control
-        input.addEventListener('beforeinput', function(e) {
-          if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') {
-            const currentValue = this.value;
-            const selectionStart = this.selectionStart || 0;
-            const selectionEnd = this.selectionEnd || 0;
-            const selectedText = currentValue.substring(selectionStart, selectionEnd);
-            
-            // Calculate what the value would be after deletion
-            let newValue = '';
-            if (selectionStart === selectionEnd) {
-              // No selection - cursor position
-              if (e.inputType === 'deleteContentBackward' && selectionStart > 0) {
-                // Backspace: remove character before cursor
-                newValue = currentValue.substring(0, selectionStart - 1) + currentValue.substring(selectionStart);
-              } else if (e.inputType === 'deleteContentForward' && selectionStart < currentValue.length) {
-                // Delete: remove character after cursor
-                newValue = currentValue.substring(0, selectionStart) + currentValue.substring(selectionStart + 1);
-              } else {
-                newValue = currentValue;
-              }
-            } else {
-              // Text is selected - remove selected text
-              newValue = currentValue.substring(0, selectionStart) + currentValue.substring(selectionEnd);
-            }
-            
-            // If result would be empty, prevent and set to 1
-            if (newValue.trim() === '' || newValue.length === 0) {
-              e.preventDefault();
-              this.value = '1';
-              // Set cursor position after setting value
-              setTimeout(() => {
-                this.setSelectionRange(1, 1);
-              }, 0);
-              return;
-            }
-          }
-        });
-        
-        // Also handle keydown as fallback
-        input.addEventListener('keydown', function(e) {
-          if (e.keyCode === 8 || e.keyCode === 46) {
-            const currentValue = this.value;
-            const selectionStart = this.selectionStart || 0;
-            const selectionEnd = this.selectionEnd || 0;
-            
-            // If all text is selected, prevent deletion
-            if (selectionStart === 0 && selectionEnd === currentValue.length && currentValue.length > 0) {
-              e.preventDefault();
-              this.value = '1';
-              setTimeout(() => {
-                this.setSelectionRange(1, 1);
-              }, 0);
-              return;
-            }
-            
-            // If only one character and cursor is at start (backspace) or end (delete)
-            if (currentValue.length === 1) {
-              e.preventDefault();
-              this.value = '1';
-              setTimeout(() => {
-                this.setSelectionRange(1, 1);
-              }, 0);
-              return;
-            }
-          }
-        });
-        
-        // Prevent non-numeric input
-        input.addEventListener('keypress', function(e) {
-          // Allow: backspace, delete, tab, escape, enter, decimal point, and numbers
-          if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
-              // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-              (e.keyCode === 65 && e.ctrlKey === true) ||
-              (e.keyCode === 67 && e.ctrlKey === true) ||
-              (e.keyCode === 86 && e.ctrlKey === true) ||
-              (e.keyCode === 88 && e.ctrlKey === true) ||
-              // Allow: home, end, left, right
-              (e.keyCode >= 35 && e.keyCode <= 39)) {
-            return;
-          }
-          // Ensure that it is a number and stop the keypress
-          if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
-            e.preventDefault();
-            // Show warning
-            if (window.Swal && typeof Swal.fire === 'function') {
-              Swal.fire({ 
-                icon: 'warning', 
-                title: 'Numbers Only', 
-                text: 'Please enter only numbers for quantity.',
-                timer: 2000,
-                showConfirmButton: false
-              });
-            } else {
-              alert('Please enter only numbers for quantity.');
-            }
-          }
-        });
-        
-        // Validate on input (for paste events)
-        input.addEventListener('input', function(e) {
-          const value = this.value;
-          // Remove any non-numeric characters
-          const numericValue = value.replace(/[^0-9]/g, '');
-          if (value !== numericValue) {
-            this.value = numericValue;
-            // Show warning
-            if (window.Swal && typeof Swal.fire === 'function') {
-              Swal.fire({ 
-                icon: 'warning', 
-                title: 'Numbers Only', 
-                text: 'Only numbers are allowed. Letters have been removed.',
-                timer: 2000,
-                showConfirmButton: false
-              });
-            } else {
-              alert('Only numbers are allowed. Letters have been removed.');
-            }
-          }
-          // Prevent empty field - if empty or becomes empty, set to 1
-          if (this.value === '' || this.value.length === 0 || this.value.trim() === '') {
-            this.value = '1';
-            this.setSelectionRange(1, 1);
-          }
-          // Ensure minimum value of 1
-          const numValue = parseInt(this.value) || 1;
-          if (numValue < 1) {
-            this.value = '1';
-          }
-        });
-      });
-    }
-    
-    function setupSelectAll() {
-      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-      if (!selectAllCheckbox) return;
-      
-      selectAllCheckbox.addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.cart-item-checkbox');
-        checkboxes.forEach(cb => cb.checked = this.checked);
-        updateSelectedItems();
-      });
-    }
-    
-    function updateSelectedItems() {
-      const checkboxes = document.querySelectorAll('.cart-item-checkbox');
-      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-      const selectedItems = Array.from(checkboxes).filter(cb => cb.checked).map(cb => parseInt(cb.dataset.cartId));
-      
-      // Update select all checkbox state
-      if (selectAllCheckbox) {
-        selectAllCheckbox.checked = selectedItems.length === checkboxes.length && checkboxes.length > 0;
-      }
-      
-      // Update summary with selected items only
-      updateSummaryForSelected(selectedItems);
-    }
-    
-    function updateSummaryForSelected(selectedItemIds) {
-      if (selectedItemIds.length === 0) {
-        document.getElementById('subtotal').textContent = '₱0.00';
-        document.getElementById('total').textContent = '₱0.00';
-        const checkoutBox = document.getElementById('checkoutBox');
-        if (checkoutBox && checkoutBox.classList.contains('show')) {
-          document.getElementById('checkoutSubtotal').textContent = '₱0.00';
-          document.getElementById('checkoutTotal').textContent = '₱0.00';
-        }
-        return;
-      }
-      
-      const selectedItems = cartItems.filter(item => selectedItemIds.includes(item.id));
-      const total = selectedItems.reduce((sum, item) => {
-        const book = item.book || item.book_id || {};
-        const bookPrice = parseFloat(book.price || 0) || 0;
-        return sum + (item.quantity * bookPrice);
-      }, 0);
-      
-      const totalFormatted = total.toFixed(2);
-      document.getElementById('subtotal').textContent = `₱${totalFormatted}`;
-      document.getElementById('total').textContent = `₱${totalFormatted}`;
-      // Also update checkout totals if checkout box is visible
-      const checkoutBox = document.getElementById('checkoutBox');
-      if (checkoutBox && checkoutBox.classList.contains('show')) {
-        document.getElementById('checkoutSubtotal').textContent = `₱${totalFormatted}`;
-        document.getElementById('checkoutTotal').textContent = `₱${totalFormatted}`;
-      }
+
+      document.getElementById('orderTotal').textContent = `₱${cartTotal.toFixed(2)}`;
     }
 
-    async function updateQuantity(cartId, newQuantity) {
-      if (newQuantity < 1) {
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'warning', title: 'Invalid Quantity', text: 'Quantity must be at least 1' });
-        }
-        return;
-      }
+    document.getElementById('placeOrderBtn').addEventListener('click', async () => {
+      const form = document.getElementById('checkoutForm');
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      
+      // Always use cash on delivery
+      data.payment_method = 'cash_on_delivery';
 
-      try {
-        await api(`/cart/${cartId}`, { method: 'PUT', data: { quantity: newQuantity } });
-        await loadCart();
-        // Update selected items summary after cart reload
-        setTimeout(() => {
-          if (typeof updateSelectedItems === 'function') updateSelectedItems();
-        }, 100);
-        if (typeof updateCartBadge === 'function') updateCartBadge();
-      } catch (err) {
-        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
+      if (!data.shipping_address || !data.contact_number) {
         if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'error', title: 'Update Failed', text: message });
+          Swal.fire({ icon: 'warning', title: 'Missing Information', text: 'Please fill in all required fields' });
         } else {
-          alert('Failed to update: ' + message);
+          alert('Please fill in all required fields');
         }
+        return;
       }
-    }
 
-    async function removeItem(cartId) {
+      if (cartItems.length === 0) {
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ icon: 'warning', title: 'Empty Cart', text: 'Your cart is empty' });
+        }
+        return;
+      }
+
       const confirmed = window.Swal && typeof Swal.fire === 'function' 
-        ? (await Swal.fire({ icon: 'question', title: 'Remove Item', text: 'Are you sure?', showCancelButton: true })).isConfirmed
-        : confirm('Remove this item from cart?');
+        ? (await Swal.fire({ 
+            icon: 'question', 
+            title: 'Place Order', 
+            html: `Total: <strong>₱${cartTotal.toFixed(2)}</strong><br>Payment: Cash on Delivery<br><br>Confirm order?`,
+            showCancelButton: true 
+          })).isConfirmed
+        : confirm(`Place order for ₱${cartTotal.toFixed(2)}?`);
 
       if (!confirmed) return;
 
       try {
-        await api(`/cart/${cartId}`, { method: 'DELETE' });
-        await loadCart();
-        if (typeof updateCartBadge === 'function') updateCartBadge();
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('placeOrderBtn').disabled = true;
+
+        const order = await api('/orders', { method: 'POST', data });
+
+        // Address is automatically saved in the order in the database
+        // No need to save to localStorage - we'll fetch from the most recent order next time
+
+        if (window.Swal && typeof Swal.fire === 'function') {
+          Swal.fire({ 
+            icon: 'success', 
+            title: 'Order Placed!', 
+            html: `Order Number: <strong>${order.order.order_number}</strong><br>Total: <strong>₱${order.order.total_amount}</strong><br><br>You will pay when you receive your order.`,
+            confirmButtonText: 'View Orders'
+          }).then(() => {
+            location.href = 'orders.html';
+          });
+        } else {
+          alert(`Order placed successfully! Order #${order.order.order_number}`);
+          location.href = 'orders.html';
+        }
       } catch (err) {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('placeOrderBtn').disabled = false;
+        
         const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
         if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'error', title: 'Remove Failed', text: message });
+          Swal.fire({ icon: 'error', title: 'Order Failed', text: message });
+        } else {
+          alert('Failed to place order: ' + message);
         }
       }
-    }
-
-    function updateSummary(total) {
-      const totalFormatted = parseFloat(total).toFixed(2);
-      document.getElementById('subtotal').textContent = `₱${totalFormatted}`;
-      document.getElementById('total').textContent = `₱${totalFormatted}`;
-      // Also update checkout totals if checkout box is visible
-      const checkoutBox = document.getElementById('checkoutBox');
-      if (checkoutBox && checkoutBox.classList.contains('show')) {
-        document.getElementById('checkoutSubtotal').textContent = `₱${totalFormatted}`;
-        document.getElementById('checkoutTotal').textContent = `₱${totalFormatted}`;
-      }
-    }
+    });
 
     // Function to setup numeric-only validation for contact number
     function setupContactNumberValidation() {
-      const contactInputs = document.querySelectorAll('input[name="contact_number"], input#contactNumber');
+      const contactInputs = document.querySelectorAll('input[name="contact_number"]');
       contactInputs.forEach(input => {
         input.addEventListener('keypress', function(e) {
           if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
@@ -828,320 +375,219 @@
     async function loadUserInfo() {
       try {
         const user = await api('/users/me');
-        const contactNumberInput = document.getElementById('contactNumber');
+        
+        // Populate contact number from user profile
+        const contactNumberInput = document.querySelector('input[name="contact_number"]');
         if (contactNumberInput && user.contact_number) {
           contactNumberInput.value = user.contact_number;
         }
+        
+        // Return user for address loading
+        return user;
       } catch (err) {
         console.error('Failed to load user info:', err);
-        // Silently fail - user can still enter contact number manually
+        // Silently fail - user can still enter information manually
+        return null;
       }
     }
     
     // Load saved address from current user's most recent order in database
     async function loadSavedAddress() {
-      console.log('🔄 loadSavedAddress() called (cart.html)');
+      console.log('🔄 loadSavedAddress() called');
+      // Try multiple times to ensure DOM is ready
+      let attempts = 0;
+      const maxAttempts = 15;
       
-      const shippingAddressInput = document.getElementById('shippingAddress');
-      if (!shippingAddressInput) {
-        console.log('❌ Shipping address textarea not found');
-        // Retry after a short delay
-        setTimeout(() => loadSavedAddress(), 200);
-        return;
-      }
+      const tryLoad = async () => {
+        const shippingAddressInput = document.querySelector('textarea[name="shipping_address"]');
+        console.log('🔍 Looking for address field, attempt', attempts + 1, ':', shippingAddressInput ? 'Found' : 'Not found');
+        
+        if (shippingAddressInput) {
+          try {
+            console.log('📡 Fetching user info...');
+            // Get current user ID first
+            const user = await api('/users/me');
+            if (!user || !user.id) {
+              console.log('❌ No user ID available');
+              return true;
+            }
+            const currentUserId = user.id;
+            const userRole = user.role;
+            const isSellerOrAdmin = userRole === 'seller' || userRole === 'admin';
+            console.log('✅ User ID:', currentUserId, 'Role:', userRole);
+            
+            // Skip address loading for admins and sellers - only load for regular users
+            if (isSellerOrAdmin) {
+              console.log('⏭️ Skipping address loading for admin/seller role');
+              return true;
+            }
+            
+            // For regular users, backend will filter by user_id automatically
+            console.log('📡 Fetching orders...');
+            const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
+            console.log('📦 Orders response:', ordersResponse);
+            
+            // Handle different response structures
+            let orders = [];
+            if (Array.isArray(ordersResponse)) {
+              orders = ordersResponse;
+            } else if (ordersResponse && ordersResponse.orders) {
+              orders = ordersResponse.orders;
+            } else if (ordersResponse && Array.isArray(ordersResponse.data)) {
+              orders = ordersResponse.data;
+            }
+            
+            console.log('📋 Parsed orders:', orders);
+            console.log('📊 Total orders found:', orders.length);
+            
+            // Get the most recent order (already filtered by backend for regular users)
+            if (orders && orders.length > 0) {
+              const mostRecentOrder = orders[0];
+              console.log('📦 Most recent order:', mostRecentOrder);
+              const savedAddress = mostRecentOrder.shipping_address;
+              console.log('📍 Address from order:', savedAddress);
+              
+              if (savedAddress && savedAddress.trim() !== '') {
+                shippingAddressInput.value = savedAddress;
+                console.log('✅ Loaded address from most recent order for user', currentUserId, ':', savedAddress);
+                return true; // Success
+              } else {
+                console.log('⚠️ Most recent order found but no shipping address');
+                return true; // Found order but no address
+              }
+            } else {
+              console.log('ℹ️ No previous orders found for current user', currentUserId);
+              return true; // No orders yet
+            }
+          } catch (err) {
+            console.error('❌ Could not load address from orders:', err);
+            return true; // Silently fail - user can enter manually
+          }
+        } else if (attempts < maxAttempts) {
+          attempts++;
+          setTimeout(tryLoad, 150); // Try again after 150ms
+          return false; // Not ready yet
+        } else {
+          console.log('❌ Shipping address textarea not found after', maxAttempts, 'attempts');
+          return false; // Failed
+        }
+      };
       
-      try {
-        console.log('📡 Fetching user info...');
-        // Get current user ID and role first
-        const user = await api('/users/me');
-        if (!user || !user.id) {
-          console.log('❌ No user ID available');
-          return;
-        }
-        const currentUserId = user.id;
-        const userRole = user.role;
-        const isSellerOrAdmin = userRole === 'seller' || userRole === 'admin';
-        console.log('✅ User ID:', currentUserId, 'Role:', userRole);
-        
-        // Skip address loading for admins and sellers - only load for regular users
-        if (isSellerOrAdmin) {
-          console.log('⏭️ Skipping address loading for admin/seller role');
-          return;
-        }
-        
-        // For regular users, backend will filter by user_id automatically
-        console.log('📡 Fetching orders...');
-        const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
-        console.log('📦 Orders response:', ordersResponse);
-        
-        // Handle different response structures
-        let orders = [];
-        if (Array.isArray(ordersResponse)) {
-          orders = ordersResponse;
-        } else if (ordersResponse && ordersResponse.orders) {
-          orders = ordersResponse.orders;
-        } else if (ordersResponse && Array.isArray(ordersResponse.data)) {
-          orders = ordersResponse.data;
-        }
-        
-        console.log('📋 Parsed orders:', orders);
-        console.log('📊 Total orders found:', orders.length);
-        
-        // Get the most recent order (already filtered by backend for regular users)
-        if (orders && orders.length > 0) {
-          const mostRecentOrder = orders[0];
-          console.log('📦 Most recent order:', mostRecentOrder);
-          const savedAddress = mostRecentOrder.shipping_address;
-          console.log('📍 Address from order:', savedAddress);
-          
-          if (savedAddress && savedAddress.trim() !== '') {
-            shippingAddressInput.value = savedAddress;
-            console.log('✅ Loaded address from most recent order for user', currentUserId, ':', savedAddress);
-            // Trigger input event to ensure any listeners are notified
-            shippingAddressInput.dispatchEvent(new Event('input', { bubbles: true }));
-          } else {
-            console.log('⚠️ Most recent order found but no shipping address');
+      await tryLoad();
+    }
+
+    // Make brand logo non-clickable when logged in
+    function updateBrandLogo() {
+      const brandLogo = document.querySelector('.brand-logo');
+      if (brandLogo && typeof isAuthed === 'function') {
+        if (isAuthed()) {
+          // User is logged in - make it non-clickable
+          if (brandLogo.tagName === 'A') {
+            const text = brandLogo.textContent;
+            const parent = brandLogo.parentNode;
+            const span = document.createElement('span');
+            span.className = brandLogo.className;
+            span.textContent = text;
+            span.style.cursor = 'default';
+            span.style.textDecoration = 'none';
+            parent.replaceChild(span, brandLogo);
           }
         } else {
-          console.log('ℹ️ No previous orders found for current user', currentUserId);
+          // User is not logged in - make it clickable
+          if (brandLogo.tagName !== 'A') {
+            const text = brandLogo.textContent;
+            const parent = brandLogo.parentNode;
+            const link = document.createElement('a');
+            link.className = brandLogo.className;
+            link.href = 'index.html';
+            link.textContent = text;
+            parent.replaceChild(link, brandLogo);
+          }
         }
+      }
+    }
+    
+    // Update brand logo on page load
+    if (typeof isAuthed === 'function') {
+      updateBrandLogo();
+    }
+    
+    // Check if user is seller/admin and redirect them
+    async function checkUserRoleAndRedirect() {
+      try {
+        if (typeof isAuthed === 'function' && isAuthed()) {
+          const user = await api('/users/me');
+          if (user && (user.role === 'seller' || user.role === 'admin')) {
+            // Sellers and admins should not access checkout - redirect to orders
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ 
+                icon: 'warning', 
+                title: 'Access Denied', 
+                text: user.role === 'seller' 
+                  ? 'Sellers can only approve/decline orders. Redirecting to orders page...' 
+                  : 'Admins can only view orders. Redirecting to orders page...',
+                timer: 2000,
+                showConfirmButton: false
+              }).then(() => {
+                location.href = 'orders.html';
+              });
+            } else {
+              alert(user.role === 'seller' 
+                ? 'Sellers can only approve/decline orders. Redirecting...' 
+                : 'Admins can only view orders. Redirecting...');
+              location.href = 'orders.html';
+            }
+            return false; // Stop execution
+          }
+        }
+        return true; // Continue execution
       } catch (err) {
-        console.error('❌ Could not load address from orders:', err);
-        // Silently fail - user can enter manually
+        console.error('Error checking user role:', err);
+        return true; // Continue execution on error
       }
     }
 
-    document.getElementById('checkoutBtn').addEventListener('click', async () => {
-      const checkboxes = document.querySelectorAll('.cart-item-checkbox');
-      const selectedItems = Array.from(checkboxes).filter(cb => cb.checked).map(cb => parseInt(cb.dataset.cartId));
-      
-      if (selectedItems.length === 0) {
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'warning', title: 'No Items Selected', text: 'Please select at least one item to checkout' });
-        } else {
-          alert('Please select at least one item to checkout');
-        }
-        return;
-      }
-      
-      // Show checkout box and scroll to it
-      const checkoutBox = document.getElementById('checkoutBox');
-      if (checkoutBox) {
-        checkoutBox.classList.add('show');
-        checkoutBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        // Update checkout totals based on selected items
-        updateSelectedItems();
-        // Setup contact number validation
-        setupContactNumberValidation();
-        
-        // Load user info and address immediately
-        await loadUserInfo();
-        // Load saved address - wait a bit for DOM to be ready
-        setTimeout(() => {
-          loadSavedAddress();
-        }, 100);
-      }
-    });
-
-    // Handle checkout form submission
-    document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const checkboxes = document.querySelectorAll('.cart-item-checkbox');
-      const selectedItems = Array.from(checkboxes).filter(cb => cb.checked).map(cb => parseInt(cb.dataset.cartId));
-      
-      if (selectedItems.length === 0) {
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'warning', title: 'No Items Selected', text: 'Please select at least one item to checkout' });
-        } else {
-          alert('Please select at least one item to checkout');
-        }
-        return;
-      }
-
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData.entries());
-      
-      if (!data.shipping_address || !data.contact_number) {
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'warning', title: 'Missing Information', text: 'Please fill in all required fields' });
-        } else {
-          alert('Please fill in all required fields');
-        }
-        return;
-      }
-
-      const total = parseFloat(document.getElementById('checkoutTotal').textContent.replace('₱', '').replace(',', '')) || 0;
-      const confirmed = window.Swal && typeof Swal.fire === 'function' 
-        ? (await Swal.fire({ 
-            icon: 'question', 
-            title: 'Place Order', 
-            html: `Total: <strong>₱${total.toFixed(2)}</strong><br>Payment: Cash on Delivery<br><br>Confirm order?`,
-            showCancelButton: true 
-          })).isConfirmed
-        : confirm(`Place order for ₱${total.toFixed(2)}?`);
-
-      if (!confirmed) return;
-
-      const placeOrderBtn = document.getElementById('placeOrderBtn');
-      placeOrderBtn.disabled = true;
-      placeOrderBtn.textContent = 'Placing Order...';
-
-      try {
-        // Prepare order items from selected items only
-        console.log('=== CHECKOUT DEBUG ===');
-        console.log('Selected checkbox IDs:', selectedItems);
-        console.log('All cart items:', cartItems.map(i => ({ id: i.id, book_id: i.book_id, book_name: i.book?.name })));
-        
-        // Filter cart items to only include selected ones
-        const selectedCartItems = cartItems.filter(item => {
-          const itemId = parseInt(item.id);
-          const isSelected = selectedItems.includes(itemId);
-          console.log(`Cart item ${itemId}: selected=${isSelected}`);
-          return isSelected;
-        });
-        
-        console.log('Filtered selected items:', selectedCartItems.map(i => ({ id: i.id, book_id: i.book_id, book_name: i.book?.name })));
-        
-        if (selectedCartItems.length !== selectedItems.length) {
-          console.error('ERROR: Mismatch between selected checkboxes and filtered items!', {
-            selectedCheckboxCount: selectedItems.length,
-            filteredItemsCount: selectedCartItems.length,
-            selectedIds: selectedItems,
-            cartItemIds: cartItems.map(i => parseInt(i.id))
-          });
-          if (window.Swal && typeof Swal.fire === 'function') {
-            Swal.fire({ icon: 'error', title: 'Selection Error', text: 'There was an error processing selected items. Please try again.' });
-          }
-          return;
-        }
-        
-        const orderItems = selectedCartItems.map(item => {
-          const bookId = item.book_id || (item.book && item.book.id);
-          if (!bookId) {
-            console.error('Could not find book_id for item:', item);
-            throw new Error(`Missing book_id for cart item ${item.id}`);
-          }
-          return {
-            book_id: bookId,
-            quantity: item.quantity,
-            price: item.book ? parseFloat(item.book.price || 0) : (parseFloat(item.price || 0)),
-            cart_item_id: parseInt(item.id) // Include cart item ID for backend to delete only selected items
-          };
-        });
-        
-        console.log('Order items being sent:', orderItems);
-        console.log('=== END DEBUG ===');
-
-        const orderData = {
-          order_items: orderItems,
-          shipping_address: data.shipping_address,
-          contact_number: data.contact_number,
-          payment_method: data.paymentMethod || 'cash_on_delivery',
-          total_amount: total
-        };
-
-        const response = await api('/orders', {
-          method: 'POST',
-          data: orderData
-        });
-
-        if (window.Swal && typeof Swal.fire === 'function') {
-          await Swal.fire({ 
-            icon: 'success', 
-            title: 'Order Placed!', 
-            text: 'Your order has been placed successfully' 
-          });
-        }
-
-        // Remove only selected items from cart
-        for (const itemId of selectedItems) {
-          try {
-            await api(`/cart/${itemId}`, { method: 'DELETE' });
-          } catch (err) {
-            console.error('Failed to remove item from cart:', err);
-          }
-        }
-
-        // Reload cart and hide checkout box
-        await loadCart();
-        const checkoutBox = document.getElementById('checkoutBox');
-        if (checkoutBox) {
-          checkoutBox.classList.remove('show');
-        }
-        document.getElementById('checkoutForm').reset();
-        if (typeof updateCartBadge === 'function') updateCartBadge();
-
-        // Redirect to orders page
-        setTimeout(() => {
-          location.href = 'orders.html';
-        }, 1000);
-
-      } catch (err) {
-        const message = (err && err.message) ? err.message : JSON.stringify(err, null, 2);
-        if (window.Swal && typeof Swal.fire === 'function') {
-          Swal.fire({ icon: 'error', title: 'Order Failed', text: message });
-        } else {
-          alert('Failed to place order: ' + message);
-        }
-      } finally {
-        placeOrderBtn.disabled = false;
-        placeOrderBtn.textContent = 'Place Order';
-      }
-    });
-
-    // Make functions globally accessible
-    window.updateSelectedItems = updateSelectedItems;
-    
     // Initialize
-    // Initialize navigation and cart
+    console.log('🚀 Checkout page initializing...');
     if (typeof requireAuth === 'function') {
-      requireAuth().then(() => {
-        // Update navigation after authentication
-        if (typeof setAuthUI === 'function') {
-          setAuthUI(true);
-        }
-        // Get user role and update navigation
-        if (typeof api === 'function') {
-          api('/users/me').then(user => {
-            if (typeof updateNavigationByRole === 'function') {
-              updateNavigationByRole(user.role || 'user');
-            }
-          }).catch(() => {
-            if (typeof updateNavigationByRole === 'function') {
-              updateNavigationByRole('user');
-            }
-          });
-        }
+      console.log('🔐 Using requireAuth()');
+      requireAuth().then(async () => {
+        console.log('✅ Auth confirmed, checking user role...');
+        const canContinue = await checkUserRoleAndRedirect();
+        if (!canContinue) return; // Stop if redirected
+        
+        console.log('✅ Auth confirmed, loading data...');
         loadCart();
+        await loadUserInfo();
+        setupContactNumberValidation();
+        console.log('📍 About to load saved address...');
+        await loadSavedAddress(); // Load after auth is confirmed
         if (typeof updateCartBadge === 'function') updateCartBadge();
       });
     } else {
       // Check if user is logged in
       if (typeof isAuthed === 'function' && isAuthed()) {
-        if (typeof setAuthUI === 'function') {
-          setAuthUI(true);
-        }
-        if (typeof api === 'function') {
-          api('/users/me').then(user => {
-            if (typeof updateNavigationByRole === 'function') {
-              updateNavigationByRole(user.role || 'user');
-            }
-          }).catch(() => {
-            if (typeof updateNavigationByRole === 'function') {
-              updateNavigationByRole('user');
-            }
+        console.log('✅ User is authenticated (isAuthed check)');
+        checkUserRoleAndRedirect().then(async (canContinue) => {
+          if (!canContinue) return; // Stop if redirected
+          
+          loadCart();
+          loadUserInfo().then(() => {
+            console.log('📍 About to load saved address...');
+            loadSavedAddress(); // Load after user info is loaded
           });
-        }
+          setupContactNumberValidation();
+          if (typeof updateCartBadge === 'function') updateCartBadge();
+        });
       } else {
-        if (typeof setAuthUI === 'function') {
-          setAuthUI(false);
-        }
+        console.log('ℹ️ User not authenticated');
+        loadCart();
+        setupContactNumberValidation();
+        if (typeof updateCartBadge === 'function') updateCartBadge();
       }
-      loadCart();
-      if (typeof updateCartBadge === 'function') updateCartBadge();
     }
   </script>
 </body>
 </html>
+
 
