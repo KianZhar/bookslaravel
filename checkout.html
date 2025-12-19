@@ -489,11 +489,50 @@
       updateBrandLogo();
     }
     
+    // Check if user is seller/admin and redirect them
+    async function checkUserRoleAndRedirect() {
+      try {
+        if (typeof isAuthed === 'function' && isAuthed()) {
+          const user = await api('/users/me');
+          if (user && (user.role === 'seller' || user.role === 'admin')) {
+            // Sellers and admins should not access checkout - redirect to orders
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ 
+                icon: 'warning', 
+                title: 'Access Denied', 
+                text: user.role === 'seller' 
+                  ? 'Sellers can only approve/decline orders. Redirecting to orders page...' 
+                  : 'Admins can only view orders. Redirecting to orders page...',
+                timer: 2000,
+                showConfirmButton: false
+              }).then(() => {
+                location.href = 'orders.html';
+              });
+            } else {
+              alert(user.role === 'seller' 
+                ? 'Sellers can only approve/decline orders. Redirecting...' 
+                : 'Admins can only view orders. Redirecting...');
+              location.href = 'orders.html';
+            }
+            return false; // Stop execution
+          }
+        }
+        return true; // Continue execution
+      } catch (err) {
+        console.error('Error checking user role:', err);
+        return true; // Continue execution on error
+      }
+    }
+
     // Initialize
     console.log('🚀 Checkout page initializing...');
     if (typeof requireAuth === 'function') {
       console.log('🔐 Using requireAuth()');
       requireAuth().then(async () => {
+        console.log('✅ Auth confirmed, checking user role...');
+        const canContinue = await checkUserRoleAndRedirect();
+        if (!canContinue) return; // Stop if redirected
+        
         console.log('✅ Auth confirmed, loading data...');
         loadCart();
         await loadUserInfo();
@@ -506,13 +545,17 @@
       // Check if user is logged in
       if (typeof isAuthed === 'function' && isAuthed()) {
         console.log('✅ User is authenticated (isAuthed check)');
-        loadCart();
-        loadUserInfo().then(() => {
-          console.log('📍 About to load saved address...');
-          loadSavedAddress(); // Load after user info is loaded
+        checkUserRoleAndRedirect().then(async (canContinue) => {
+          if (!canContinue) return; // Stop if redirected
+          
+          loadCart();
+          loadUserInfo().then(() => {
+            console.log('📍 About to load saved address...');
+            loadSavedAddress(); // Load after user info is loaded
+          });
+          setupContactNumberValidation();
+          if (typeof updateCartBadge === 'function') updateCartBadge();
         });
-        setupContactNumberValidation();
-        if (typeof updateCartBadge === 'function') updateCartBadge();
       } else {
         console.log('ℹ️ User not authenticated');
         loadCart();
