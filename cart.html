@@ -485,7 +485,7 @@
                 <button class="quantity-btn" onclick="updateQuantity(${item.id}, ${item.quantity - 1})">-</button>
                 <input type="number" class="quantity-input" value="${item.quantity}" min="1" 
                        inputmode="numeric"
-                       onchange="updateQuantity(${item.id}, parseInt(this.value))">
+                       onchange="const qty = parseInt(this.value) || 1; this.value = qty < 1 ? 1 : qty; updateQuantity(${item.id}, this.value);">
                 <button class="quantity-btn" onclick="updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
                 <button class="remove-btn" onclick="removeItem(${item.id})">Remove</button>
               </div>
@@ -556,6 +556,23 @@
               });
             } else {
               alert('Only numbers are allowed. Letters have been removed.');
+            }
+          }
+          // Prevent blank values - set to 1 if empty or less than 1
+          if (this.value === '' || parseInt(this.value) < 1) {
+            this.value = '1';
+          }
+        });
+        
+        // Ensure minimum value on blur
+        input.addEventListener('blur', function(e) {
+          const value = parseInt(this.value);
+          if (isNaN(value) || value < 1) {
+            this.value = '1';
+            // Trigger updateQuantity to sync with backend
+            const cartId = this.closest('.cart-item')?.querySelector('.cart-item-checkbox')?.dataset?.cartId;
+            if (cartId) {
+              updateQuantity(parseInt(cartId), 1);
             }
           }
         });
