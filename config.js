@@ -9,17 +9,18 @@ let SERVER_IP;
 let SERVER_PORT;
 
 if (isProduction) {
-  // PRODUCTION Configuration (GitHub Pages)
+  // PRODUCTION Configuration (GitHub Pages: https://kianzhar.github.io/bookslaravel/)
+  // Backend is still on ccs4thyear.com
   SERVER_IP = 'ccs4thyear.com';
   SERVER_PORT = '';
   SERVER_BASE_URL = `https://${SERVER_IP}/Books/Kian_laravel`;
-  console.log('🚀 Running in PRODUCTION mode');
+  console.log('🚀 Running in PRODUCTION mode (GitHub Pages)');
 } else {
   // LOCAL DEVELOPMENT Configuration
   SERVER_IP = 'localhost';
   SERVER_PORT = '8000';
   SERVER_BASE_URL = `http://${SERVER_IP}:${SERVER_PORT}`;
-  console.log('💻 Running in DEVELOPMENT mode');
+  console.log('💻 Running in DEVELOPMENT mode (localhost)');
 }
 
 window.CONFIG = {
