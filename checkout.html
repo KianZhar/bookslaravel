@@ -144,7 +144,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Contact Number *</label>
-            <input type="text" name="contact_number" class="form-input" placeholder="e.g. +1234567890" required>
+            <input type="text" name="contact_number" class="form-input" placeholder="e.g. +1234567890" inputmode="numeric" required>
           </div>
           <div class="payment-info">
             <div class="payment-info-title">💳 Payment Method</div>
@@ -282,9 +282,6 @@
 
         const order = await api('/orders', { method: 'POST', data });
 
-        // Address is automatically saved in the order in the database
-        // No need to save to localStorage - we'll fetch from the most recent order next time
-
         if (window.Swal && typeof Swal.fire === 'function') {
           Swal.fire({ 
             icon: 'success', 
@@ -311,48 +308,106 @@
       }
     });
 
-    
-    
-    // Load saved address from user's most recent order
-    async function loadSavedAddress() {
-      try {
-        const shippingAddressInput = document.querySelector('textarea[name="shipping_address"]');
-        if (!shippingAddressInput) return;
-        
-        const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
-        const orders = Array.isArray(ordersResponse) ? ordersResponse : 
-                      (ordersResponse && ordersResponse.orders) ? ordersResponse.orders : [];
-        
-        if (orders && orders.length > 0) {
-          const mostRecentOrder = orders[0];
-          const savedAddress = mostRecentOrder.shipping_address;
-          
-          if (savedAddress && savedAddress.trim() !== '') {
-            shippingAddressInput.value = savedAddress;
+    // Function to setup numeric-only validation for contact number
+    function setupContactNumberValidation() {
+      const contactInputs = document.querySelectorAll('input[name="contact_number"]');
+      contactInputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+          if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+              (e.keyCode === 65 && e.ctrlKey === true) ||
+              (e.keyCode === 67 && e.ctrlKey === true) ||
+              (e.keyCode === 86 && e.ctrlKey === true) ||
+              (e.keyCode === 88 && e.ctrlKey === true) ||
+              (e.keyCode >= 35 && e.keyCode <= 39)) {
+            return;
           }
+          if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Please enter only numbers for contact number.', timer: 2000, showConfirmButton: false });
+            } else {
+              alert('Please enter only numbers for contact number.');
+            }
+          }
+        });
+        input.addEventListener('input', function(e) {
+          const value = this.value;
+          const numericValue = value.replace(/[^0-9]/g, '');
+          if (value !== numericValue) {
+            this.value = numericValue;
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Only numbers are allowed. Letters have been removed.', timer: 2000, showConfirmButton: false });
+            } else {
+              alert('Only numbers are allowed. Letters have been removed.');
+            }
+          }
+        });
+      });
+    }
+    
+    // Load user information to populate contact number
+    async function loadUserInfo() {
+      try {
+        const user = await api('/users/me');
+        const contactNumberInput = document.querySelector('input[name="contact_number"]');
+        if (contactNumberInput && user.contact_number) {
+          contactNumberInput.value = user.contact_number;
         }
       } catch (err) {
-        // Silently fail - user can enter address manually
+        console.error('Failed to load user info:', err);
+        // Silently fail - user can still enter contact number manually
       }
     }
 
+    // Make brand logo non-clickable when logged in
+    function updateBrandLogo() {
+      const brandLogo = document.querySelector('.brand-logo');
+      if (brandLogo && typeof isAuthed === 'function') {
+        if (isAuthed()) {
+          // User is logged in - make it non-clickable
+          if (brandLogo.tagName === 'A') {
+            const text = brandLogo.textContent;
+            const parent = brandLogo.parentNode;
+            const span = document.createElement('span');
+            span.className = brandLogo.className;
+            span.textContent = text;
+            span.style.cursor = 'default';
+            span.style.textDecoration = 'none';
+            parent.replaceChild(span, brandLogo);
+          }
+        } else {
+          // User is not logged in - make it clickable
+          if (brandLogo.tagName !== 'A') {
+            const text = brandLogo.textContent;
+            const parent = brandLogo.parentNode;
+            const link = document.createElement('a');
+            link.className = brandLogo.className;
+            link.href = 'index.html';
+            link.textContent = text;
+            parent.replaceChild(link, brandLogo);
+          }
+        }
+      }
+    }
+    
+    // Update brand logo on page load
+    if (typeof isAuthed === 'function') {
+      updateBrandLogo();
+    }
+    
     // Initialize
     if (typeof requireAuth === 'function') {
-      requireAuth().then(async () => {
+      requireAuth().then(() => {
         loadCart();
-        await loadSavedAddress(); // Load saved address from previous orders
+        loadUserInfo();
+        setupContactNumberValidation();
         if (typeof updateCartBadge === 'function') updateCartBadge();
       });
     } else {
-      // Check if user is logged in
-      if (typeof isAuthed === 'function' && isAuthed()) {
-        loadCart();
-        loadSavedAddress(); // Load saved address from previous orders
-        if (typeof updateCartBadge === 'function') updateCartBadge();
-      } else {
-        loadCart();
-        if (typeof updateCartBadge === 'function') updateCartBadge();
-      }
+      loadCart();
+      loadUserInfo();
+      setupContactNumberValidation();
+      if (typeof updateCartBadge === 'function') updateCartBadge();
     }
   </script>
 </body>
