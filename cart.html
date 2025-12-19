@@ -356,41 +356,6 @@
       updateBrandLogo();
     }
 
-    // Check if user is seller/admin and redirect them
-    async function checkUserRoleAndRedirect() {
-      try {
-        if (typeof isAuthed === 'function' && isAuthed()) {
-          const user = await api('/users/me');
-          if (user && (user.role === 'seller' || user.role === 'admin')) {
-            // Sellers and admins should not access cart - redirect to orders
-            if (window.Swal && typeof Swal.fire === 'function') {
-              Swal.fire({ 
-                icon: 'warning', 
-                title: 'Access Denied', 
-                text: user.role === 'seller' 
-                  ? 'Sellers can only approve/decline orders. Redirecting to orders page...' 
-                  : 'Admins can only view orders. Redirecting to orders page...',
-                timer: 2000,
-                showConfirmButton: false
-              }).then(() => {
-                location.href = 'orders.html';
-              });
-            } else {
-              alert(user.role === 'seller' 
-                ? 'Sellers can only approve/decline orders. Redirecting...' 
-                : 'Admins can only view orders. Redirecting...');
-              location.href = 'orders.html';
-            }
-            return false; // Stop execution
-          }
-        }
-        return true; // Continue execution
-      } catch (err) {
-        console.error('Error checking user role:', err);
-        return true; // Continue execution on error
-      }
-    }
-
     // Cart functionality
     let cartItems = [];
 
@@ -452,32 +417,17 @@
         const errorMessage = err && err.message ? err.message : JSON.stringify(err, null, 2);
         console.error('Error details:', err);
         
-        const status = err.status || (err.response && err.response.status);
-        const responseText = err.responseText || (err.response && err.response.responseText) || '';
-        const message = errorMessage || responseText;
-        
-        console.log('Cart error - status:', status, 'message:', message);
-        
-        if (message.includes('Unauthorized') || message.includes('401')) {
+        if (errorMessage.includes('Unauthorized') || errorMessage.includes('401')) {
           location.href = 'login.html';
-        } else if (status === 403 || message.includes('Forbidden') || message.includes('403') || message.includes('only available for regular users')) {
-          // User is seller/admin - redirect to orders
-          console.log('Detected seller/admin - redirecting to orders...');
-          if (window.Swal && typeof Swal.fire === 'function') {
-            Swal.fire({ 
-              icon: 'warning', 
-              title: 'Access Denied', 
-              text: 'Sellers and admins cannot access cart. Redirecting to orders page...',
-              timer: 2000,
-              showConfirmButton: false
-            }).then(() => {
-              location.href = 'orders.html';
-            });
-          } else {
-            alert('Sellers and admins cannot access cart. Redirecting...');
-            location.href = 'orders.html';
-          }
-          return;
+        } else if (errorMessage.includes('Forbidden') || errorMessage.includes('403')) {
+          document.getElementById('cartContainer').innerHTML = `
+            <div class="empty-cart">
+              <div class="empty-cart-icon">🚫</div>
+              <p>Cart is only available for regular users.</p>
+              <p style="margin-top:0.5rem; color:rgba(255,255,255,0.7);">Admin and Seller accounts cannot use the cart.</p>
+            </div>
+          `;
+          document.getElementById('cartSummary').style.display = 'none';
         } else {
           document.getElementById('cartContainer').innerHTML = `
             <div class="empty-cart">
@@ -867,24 +817,18 @@
       
       try {
         console.log('📡 Fetching user info...');
-        // Get current user ID and role first
+        // Get current user ID first
         const user = await api('/users/me');
         if (!user || !user.id) {
           console.log('❌ No user ID available');
           return;
         }
         const currentUserId = user.id;
-        const userRole = user.role;
-        const isSellerOrAdmin = userRole === 'seller' || userRole === 'admin';
-        console.log('✅ User ID:', currentUserId, 'Role:', userRole);
+        console.log('✅ User ID:', currentUserId);
         
-        // Skip address loading for admins and sellers - only load for regular users
-        if (isSellerOrAdmin) {
-          console.log('⏭️ Skipping address loading for admin/seller role');
-          return;
-        }
-        
-        // For regular users, backend will filter by user_id automatically
+        // Fetch orders - DO NOT use &all=true to ensure we only get current user's orders
+        // For regular users, backend filters by user_id automatically
+        // For sellers/admins, we need to filter on frontend to get only their own orders
         console.log('📡 Fetching orders...');
         const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
         console.log('📦 Orders response:', ordersResponse);
@@ -902,9 +846,20 @@
         console.log('📋 Parsed orders:', orders);
         console.log('📊 Total orders found:', orders.length);
         
-        // Get the most recent order (already filtered by backend for regular users)
-        if (orders && orders.length > 0) {
-          const mostRecentOrder = orders[0];
+        // Filter to only get orders belonging to the current user
+        // This ensures sellers/admins get their own address, not customer addresses
+        const userOrders = orders.filter(order => {
+          const orderUserId = order.user_id || order.user?.id;
+          const matches = orderUserId === currentUserId;
+          console.log('🔍 Order', order.id, '- User ID:', orderUserId, '- Matches:', matches);
+          return matches;
+        });
+        
+        console.log('👤 User orders after filtering:', userOrders.length);
+        
+        // Get the most recent order from current user's orders
+        if (userOrders && userOrders.length > 0) {
+          const mostRecentOrder = userOrders[0];
           console.log('📦 Most recent order:', mostRecentOrder);
           const savedAddress = mostRecentOrder.shipping_address;
           console.log('📍 Address from order:', savedAddress);
