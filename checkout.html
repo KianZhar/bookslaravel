@@ -358,6 +358,38 @@
         // Silently fail - user can still enter contact number manually
       }
     }
+    
+    // Load recent shipping address from the most recent order
+    async function loadRecentShippingAddress() {
+      try {
+        const shippingAddressTextarea = document.querySelector('textarea[name="shipping_address"]');
+        if (!shippingAddressTextarea) return;
+        
+        // Only fill if the field is empty (don't overwrite if user already typed something)
+        if (shippingAddressTextarea.value.trim() !== '') return;
+        
+        // Fetch orders sorted by created_at descending
+        const response = await api('/orders?sort_by=created_at&sort_order=desc');
+        
+        // Handle different response structures
+        let orders = [];
+        if (Array.isArray(response)) {
+          orders = response;
+        } else if (response && response.orders) {
+          orders = response.orders;
+        } else if (response && Array.isArray(response.data)) {
+          orders = response.data;
+        }
+        
+        // Get the most recent order
+        if (orders && orders.length > 0 && orders[0].shipping_address) {
+          shippingAddressTextarea.value = orders[0].shipping_address;
+        }
+      } catch (err) {
+        console.error('Failed to load recent shipping address:', err);
+        // Silently fail - user can still enter shipping address manually
+      }
+    }
 
     // Make brand logo non-clickable when logged in
     function updateBrandLogo() {
@@ -400,12 +432,14 @@
       requireAuth().then(() => {
         loadCart();
         loadUserInfo();
+        loadRecentShippingAddress();
         setupContactNumberValidation();
         if (typeof updateCartBadge === 'function') updateCartBadge();
       });
     } else {
       loadCart();
       loadUserInfo();
+      loadRecentShippingAddress();
       setupContactNumberValidation();
       if (typeof updateCartBadge === 'function') updateCartBadge();
     }
