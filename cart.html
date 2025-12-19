@@ -391,6 +391,9 @@
       }
     }
 
+    // Check user role on page load
+    checkUserRoleAndRedirect();
+
     // Cart functionality
     let cartItems = [];
 
@@ -867,7 +870,7 @@
       
       try {
         console.log('📡 Fetching user info...');
-        // Get current user ID and role first
+        // Get current user ID first
         const user = await api('/users/me');
         if (!user || !user.id) {
           console.log('❌ No user ID available');
@@ -1111,11 +1114,15 @@
     // Initialize
     // Initialize navigation and cart
     if (typeof requireAuth === 'function') {
-      requireAuth().then(() => {
+      requireAuth().then(async () => {
         // Update navigation after authentication
         if (typeof setAuthUI === 'function') {
           setAuthUI(true);
         }
+        // Check user role and redirect if seller/admin
+        const canContinue = await checkUserRoleAndRedirect();
+        if (!canContinue) return; // Stop if redirected
+        
         // Get user role and update navigation
         if (typeof api === 'function') {
           api('/users/me').then(user => {
@@ -1137,24 +1144,31 @@
         if (typeof setAuthUI === 'function') {
           setAuthUI(true);
         }
-        if (typeof api === 'function') {
-          api('/users/me').then(user => {
-            if (typeof updateNavigationByRole === 'function') {
-              updateNavigationByRole(user.role || 'user');
-            }
-          }).catch(() => {
-            if (typeof updateNavigationByRole === 'function') {
-              updateNavigationByRole('user');
-            }
-          });
-        }
+        // Check user role and redirect if seller/admin
+        checkUserRoleAndRedirect().then(async (canContinue) => {
+          if (!canContinue) return; // Stop if redirected
+          
+          if (typeof api === 'function') {
+            api('/users/me').then(user => {
+              if (typeof updateNavigationByRole === 'function') {
+                updateNavigationByRole(user.role || 'user');
+              }
+            }).catch(() => {
+              if (typeof updateNavigationByRole === 'function') {
+                updateNavigationByRole('user');
+              }
+            });
+          }
+          loadCart();
+          if (typeof updateCartBadge === 'function') updateCartBadge();
+        });
       } else {
         if (typeof setAuthUI === 'function') {
           setAuthUI(false);
         }
+        loadCart();
+        if (typeof updateCartBadge === 'function') updateCartBadge();
       }
-      loadCart();
-      if (typeof updateCartBadge === 'function') updateCartBadge();
     }
   </script>
 </body>
