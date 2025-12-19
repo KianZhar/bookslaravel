@@ -843,6 +843,16 @@ if (addForm && (tblBody || booksGrid)) {
                     this.value = numericValue;
                     Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Only numbers are allowed. Letters have been removed.', timer: 2000, showConfirmButton: false });
                   }
+                  // Prevent blank values - set to 1 if empty or less than 1
+                  if (this.value === '' || parseInt(this.value) < 1) {
+                    this.value = '1';
+                  }
+                });
+                input.addEventListener('blur', function(e) {
+                  // Ensure minimum value of 1 if empty
+                  if (this.value === '' || parseInt(this.value) < 1) {
+                    this.value = '1';
+                  }
                 });
               }
             },
