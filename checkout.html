@@ -213,28 +213,32 @@
         console.error('Failed to load cart:', err);
         // Check if error is 403 (Forbidden) - means user is seller/admin
         const status = err.status || (err.response && err.response.status);
-        const message = err.message || (err.response && err.response.message) || JSON.stringify(err);
+        const responseText = err.responseText || (err.response && err.response.responseText) || '';
+        const message = err.message || (err.response && err.response.message) || responseText || JSON.stringify(err);
         
-        if (status === 403 || (message && (message.includes('Forbidden') || message.includes('only available for regular users')))) {
+        console.log('Cart error - status:', status, 'message:', message);
+        
+        if (status === 403 || message.includes('Forbidden') || message.includes('only available for regular users')) {
           // User is seller/admin - redirect to orders
+          console.log('Detected seller/admin - redirecting to orders...');
           if (window.Swal && typeof Swal.fire === 'function') {
             Swal.fire({ 
               icon: 'warning', 
               title: 'Access Denied', 
-              text: 'Sellers and admins cannot access cart. Redirecting to orders page...',
+              text: 'Sellers and admins cannot access checkout. Redirecting to orders page...',
               timer: 2000,
               showConfirmButton: false
             }).then(() => {
               location.href = 'orders.html';
             });
           } else {
-            alert('Sellers and admins cannot access cart. Redirecting...');
+            alert('Sellers and admins cannot access checkout. Redirecting...');
             location.href = 'orders.html';
           }
           return;
         }
         
-        if (err.message && err.message.includes('Unauthorized')) {
+        if (message && message.includes('Unauthorized')) {
           location.href = 'login.html';
         }
       } finally {
