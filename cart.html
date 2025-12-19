@@ -507,6 +507,35 @@
     function setupNumericInputs() {
       const quantityInputs = document.querySelectorAll('.quantity-input');
       quantityInputs.forEach(input => {
+        // Prevent backspace/delete when value is 1 (prevent blank)
+        input.addEventListener('keydown', function(e) {
+          if (e.keyCode === 8 || e.keyCode === 46) { // Backspace or Delete
+            const input = e.target;
+            const selectionStart = input.selectionStart || 0;
+            const selectionEnd = input.selectionEnd || 0;
+            const value = input.value;
+            
+            // If value is exactly "1", prevent deletion that would make it blank
+            if (value === '1') {
+              // If all text is selected, prevent deletion
+              if (selectionStart === 0 && selectionEnd === value.length) {
+                e.preventDefault();
+                return false;
+              }
+              // If backspace at the end of "1", prevent it
+              if (e.keyCode === 8 && selectionStart === 1 && selectionEnd === 1) {
+                e.preventDefault();
+                return false;
+              }
+              // If delete at the start of "1", prevent it
+              if (e.keyCode === 46 && selectionStart === 0 && selectionEnd === 0) {
+                e.preventDefault();
+                return false;
+              }
+            }
+          }
+        });
+        
         // Prevent non-numeric input
         input.addEventListener('keypress', function(e) {
           // Allow: backspace, delete, tab, escape, enter, decimal point, and numbers
