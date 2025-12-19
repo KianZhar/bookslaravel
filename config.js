@@ -1,27 +1,11 @@
 // Backend API Configuration
-// ENVIRONMENT DETECTION: Automatically switches between local and production
+// ALWAYS USE PRODUCTION SERVER
 
-const isProduction = window.location.hostname === 'kianzhar.github.io';
-const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const SERVER_IP = 'ccs4thyear.com';
+const SERVER_PORT = '';
+const SERVER_BASE_URL = `https://${SERVER_IP}/Books/Kian_laravel`;
 
-let SERVER_BASE_URL;
-let SERVER_IP;
-let SERVER_PORT;
-
-if (isProduction) {
-  // PRODUCTION Configuration (GitHub Pages: https://kianzhar.github.io/bookslaravel/)
-  // Backend is still on ccs4thyear.com
-  SERVER_IP = 'ccs4thyear.com';
-  SERVER_PORT = '';
-  SERVER_BASE_URL = `https://${SERVER_IP}/Books/Kian_laravel`;
-  console.log('🚀 Running in PRODUCTION mode (GitHub Pages)');
-} else {
-  // LOCAL DEVELOPMENT Configuration
-  SERVER_IP = 'localhost';
-  SERVER_PORT = '8000';
-  SERVER_BASE_URL = `http://${SERVER_IP}:${SERVER_PORT}`;
-  console.log('💻 Running in DEVELOPMENT mode (localhost)');
-}
+console.log('🚀 Using PRODUCTION server for all environments');
 
 window.CONFIG = {
   SERVER_IP: SERVER_IP,
@@ -30,9 +14,9 @@ window.CONFIG = {
   API_URL: `${SERVER_BASE_URL}/api`,
   UPLOADS_URL: `${SERVER_BASE_URL}/uploads/`,
   
-  ENVIRONMENT: isProduction ? 'production' : 'development',
+  ENVIRONMENT: 'production',
   WITH_CREDENTIALS: true,
-  DEBUG: !isProduction
+  DEBUG: false
 };
 
 console.log('📡 API Configuration:');
