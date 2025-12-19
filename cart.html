@@ -817,20 +817,25 @@
       
       try {
         console.log('📡 Fetching user info...');
-        // Get current user ID first
+        // Get current user ID and role first
         const user = await api('/users/me');
         if (!user || !user.id) {
           console.log('❌ No user ID available');
           return;
         }
         const currentUserId = user.id;
-        console.log('✅ User ID:', currentUserId);
+        const userRole = user.role;
+        const isSellerOrAdmin = userRole === 'seller' || userRole === 'admin';
+        console.log('✅ User ID:', currentUserId, 'Role:', userRole);
         
-        // Fetch orders - DO NOT use &all=true to ensure we only get current user's orders
-        // For regular users, backend filters by user_id automatically
-        // For sellers/admins, we need to filter on frontend to get only their own orders
-        console.log('📡 Fetching orders...');
-        const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
+        // Build API URL - for sellers/admins, fetch all orders (same as orders.html)
+        // For regular users, backend will filter by user_id automatically
+        let sortParams = '?sort_by=created_at&sort_order=desc';
+        if (isSellerOrAdmin) {
+          sortParams += '&all=true';
+        }
+        console.log('📡 Fetching orders with params:', sortParams);
+        const ordersResponse = await api('/orders' + sortParams);
         console.log('📦 Orders response:', ordersResponse);
         
         // Handle different response structures
