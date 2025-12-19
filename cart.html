@@ -828,14 +828,15 @@
         const isSellerOrAdmin = userRole === 'seller' || userRole === 'admin';
         console.log('✅ User ID:', currentUserId, 'Role:', userRole);
         
-        // Build API URL - for sellers/admins, fetch all orders (same as orders.html)
-        // For regular users, backend will filter by user_id automatically
-        let sortParams = '?sort_by=created_at&sort_order=desc';
+        // Skip address loading for admins and sellers - only load for regular users
         if (isSellerOrAdmin) {
-          sortParams += '&all=true';
+          console.log('⏭️ Skipping address loading for admin/seller role');
+          return;
         }
-        console.log('📡 Fetching orders with params:', sortParams);
-        const ordersResponse = await api('/orders' + sortParams);
+        
+        // For regular users, backend will filter by user_id automatically
+        console.log('📡 Fetching orders...');
+        const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
         console.log('📦 Orders response:', ordersResponse);
         
         // Handle different response structures
@@ -851,20 +852,9 @@
         console.log('📋 Parsed orders:', orders);
         console.log('📊 Total orders found:', orders.length);
         
-        // Filter to only get orders belonging to the current user
-        // This ensures sellers/admins get their own address, not customer addresses
-        const userOrders = orders.filter(order => {
-          const orderUserId = order.user_id || order.user?.id;
-          const matches = orderUserId === currentUserId;
-          console.log('🔍 Order', order.id, '- User ID:', orderUserId, '- Matches:', matches);
-          return matches;
-        });
-        
-        console.log('👤 User orders after filtering:', userOrders.length);
-        
-        // Get the most recent order from current user's orders
-        if (userOrders && userOrders.length > 0) {
-          const mostRecentOrder = userOrders[0];
+        // Get the most recent order (already filtered by backend for regular users)
+        if (orders && orders.length > 0) {
+          const mostRecentOrder = orders[0];
           console.log('📦 Most recent order:', mostRecentOrder);
           const savedAddress = mostRecentOrder.shipping_address;
           console.log('📍 Address from order:', savedAddress);
