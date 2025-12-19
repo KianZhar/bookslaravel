@@ -507,74 +507,6 @@
     function setupNumericInputs() {
       const quantityInputs = document.querySelectorAll('.quantity-input');
       quantityInputs.forEach(input => {
-        // Prevent empty field on backspace/delete - use beforeinput for better control
-        input.addEventListener('beforeinput', function(e) {
-          if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') {
-            const currentValue = this.value;
-            const selectionStart = this.selectionStart || 0;
-            const selectionEnd = this.selectionEnd || 0;
-            const selectedText = currentValue.substring(selectionStart, selectionEnd);
-            
-            // Calculate what the value would be after deletion
-            let newValue = '';
-            if (selectionStart === selectionEnd) {
-              // No selection - cursor position
-              if (e.inputType === 'deleteContentBackward' && selectionStart > 0) {
-                // Backspace: remove character before cursor
-                newValue = currentValue.substring(0, selectionStart - 1) + currentValue.substring(selectionStart);
-              } else if (e.inputType === 'deleteContentForward' && selectionStart < currentValue.length) {
-                // Delete: remove character after cursor
-                newValue = currentValue.substring(0, selectionStart) + currentValue.substring(selectionStart + 1);
-              } else {
-                newValue = currentValue;
-              }
-            } else {
-              // Text is selected - remove selected text
-              newValue = currentValue.substring(0, selectionStart) + currentValue.substring(selectionEnd);
-            }
-            
-            // If result would be empty, prevent and set to 1
-            if (newValue.trim() === '' || newValue.length === 0) {
-              e.preventDefault();
-              this.value = '1';
-              // Set cursor position after setting value
-              setTimeout(() => {
-                this.setSelectionRange(1, 1);
-              }, 0);
-              return;
-            }
-          }
-        });
-        
-        // Also handle keydown as fallback
-        input.addEventListener('keydown', function(e) {
-          if (e.keyCode === 8 || e.keyCode === 46) {
-            const currentValue = this.value;
-            const selectionStart = this.selectionStart || 0;
-            const selectionEnd = this.selectionEnd || 0;
-            
-            // If all text is selected, prevent deletion
-            if (selectionStart === 0 && selectionEnd === currentValue.length && currentValue.length > 0) {
-              e.preventDefault();
-              this.value = '1';
-              setTimeout(() => {
-                this.setSelectionRange(1, 1);
-              }, 0);
-              return;
-            }
-            
-            // If only one character and cursor is at start (backspace) or end (delete)
-            if (currentValue.length === 1) {
-              e.preventDefault();
-              this.value = '1';
-              setTimeout(() => {
-                this.setSelectionRange(1, 1);
-              }, 0);
-              return;
-            }
-          }
-        });
-        
         // Prevent non-numeric input
         input.addEventListener('keypress', function(e) {
           // Allow: backspace, delete, tab, escape, enter, decimal point, and numbers
@@ -625,16 +557,6 @@
             } else {
               alert('Only numbers are allowed. Letters have been removed.');
             }
-          }
-          // Prevent empty field - if empty or becomes empty, set to 1
-          if (this.value === '' || this.value.length === 0 || this.value.trim() === '') {
-            this.value = '1';
-            this.setSelectionRange(1, 1);
-          }
-          // Ensure minimum value of 1
-          const numValue = parseInt(this.value) || 1;
-          if (numValue < 1) {
-            this.value = '1';
           }
         });
       });
@@ -802,86 +724,8 @@
         // Silently fail - user can still enter contact number manually
       }
     }
-    
-    // Load saved address from current user's most recent order in database
-    async function loadSavedAddress() {
-      console.log('🔄 loadSavedAddress() called (cart.html)');
-      
-      const shippingAddressInput = document.getElementById('shippingAddress');
-      if (!shippingAddressInput) {
-        console.log('❌ Shipping address textarea not found');
-        // Retry after a short delay
-        setTimeout(() => loadSavedAddress(), 200);
-        return;
-      }
-      
-      try {
-        console.log('📡 Fetching user info...');
-        // Get current user ID first
-        const user = await api('/users/me');
-        if (!user || !user.id) {
-          console.log('❌ No user ID available');
-          return;
-        }
-        const currentUserId = user.id;
-        console.log('✅ User ID:', currentUserId);
-        
-        // Fetch orders - DO NOT use &all=true to ensure we only get current user's orders
-        // For regular users, backend filters by user_id automatically
-        // For sellers/admins, we need to filter on frontend to get only their own orders
-        console.log('📡 Fetching orders...');
-        const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
-        console.log('📦 Orders response:', ordersResponse);
-        
-        // Handle different response structures
-        let orders = [];
-        if (Array.isArray(ordersResponse)) {
-          orders = ordersResponse;
-        } else if (ordersResponse && ordersResponse.orders) {
-          orders = ordersResponse.orders;
-        } else if (ordersResponse && Array.isArray(ordersResponse.data)) {
-          orders = ordersResponse.data;
-        }
-        
-        console.log('📋 Parsed orders:', orders);
-        console.log('📊 Total orders found:', orders.length);
-        
-        // Filter to only get orders belonging to the current user
-        // This ensures sellers/admins get their own address, not customer addresses
-        const userOrders = orders.filter(order => {
-          const orderUserId = order.user_id || order.user?.id;
-          const matches = orderUserId === currentUserId;
-          console.log('🔍 Order', order.id, '- User ID:', orderUserId, '- Matches:', matches);
-          return matches;
-        });
-        
-        console.log('👤 User orders after filtering:', userOrders.length);
-        
-        // Get the most recent order from current user's orders
-        if (userOrders && userOrders.length > 0) {
-          const mostRecentOrder = userOrders[0];
-          console.log('📦 Most recent order:', mostRecentOrder);
-          const savedAddress = mostRecentOrder.shipping_address;
-          console.log('📍 Address from order:', savedAddress);
-          
-          if (savedAddress && savedAddress.trim() !== '') {
-            shippingAddressInput.value = savedAddress;
-            console.log('✅ Loaded address from most recent order for user', currentUserId, ':', savedAddress);
-            // Trigger input event to ensure any listeners are notified
-            shippingAddressInput.dispatchEvent(new Event('input', { bubbles: true }));
-          } else {
-            console.log('⚠️ Most recent order found but no shipping address');
-          }
-        } else {
-          console.log('ℹ️ No previous orders found for current user', currentUserId);
-        }
-      } catch (err) {
-        console.error('❌ Could not load address from orders:', err);
-        // Silently fail - user can enter manually
-      }
-    }
 
-    document.getElementById('checkoutBtn').addEventListener('click', async () => {
+    document.getElementById('checkoutBtn').addEventListener('click', () => {
       const checkboxes = document.querySelectorAll('.cart-item-checkbox');
       const selectedItems = Array.from(checkboxes).filter(cb => cb.checked).map(cb => parseInt(cb.dataset.cartId));
       
@@ -901,15 +745,10 @@
         checkoutBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         // Update checkout totals based on selected items
         updateSelectedItems();
+        // Load user info
+        loadUserInfo();
         // Setup contact number validation
         setupContactNumberValidation();
-        
-        // Load user info and address immediately
-        await loadUserInfo();
-        // Load saved address - wait a bit for DOM to be ready
-        setTimeout(() => {
-          loadSavedAddress();
-        }, 100);
       }
     });
 
