@@ -356,6 +356,41 @@
       updateBrandLogo();
     }
 
+    // Check if user is seller/admin and redirect them
+    async function checkUserRoleAndRedirect() {
+      try {
+        if (typeof isAuthed === 'function' && isAuthed()) {
+          const user = await api('/users/me');
+          if (user && (user.role === 'seller' || user.role === 'admin')) {
+            // Sellers and admins should not access cart - redirect to orders
+            if (window.Swal && typeof Swal.fire === 'function') {
+              Swal.fire({ 
+                icon: 'warning', 
+                title: 'Access Denied', 
+                text: user.role === 'seller' 
+                  ? 'Sellers can only approve/decline orders. Redirecting to orders page...' 
+                  : 'Admins can only view orders. Redirecting to orders page...',
+                timer: 2000,
+                showConfirmButton: false
+              }).then(() => {
+                location.href = 'orders.html';
+              });
+            } else {
+              alert(user.role === 'seller' 
+                ? 'Sellers can only approve/decline orders. Redirecting...' 
+                : 'Admins can only view orders. Redirecting...');
+              location.href = 'orders.html';
+            }
+            return false; // Stop execution
+          }
+        }
+        return true; // Continue execution
+      } catch (err) {
+        console.error('Error checking user role:', err);
+        return true; // Continue execution on error
+      }
+    }
+
     // Cart functionality
     let cartItems = [];
 
