@@ -144,7 +144,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Contact Number *</label>
-            <input type="text" name="contact_number" class="form-input" placeholder="e.g. +1234567890" inputmode="numeric" required>
+            <input type="text" name="contact_number" class="form-input" placeholder="e.g. +1234567890" required>
           </div>
           <div class="payment-info">
             <div class="payment-info-title">💳 Payment Method</div>
@@ -311,217 +311,46 @@
       }
     });
 
-    // Function to setup numeric-only validation for contact number
-    function setupContactNumberValidation() {
-      const contactInputs = document.querySelectorAll('input[name="contact_number"]');
-      contactInputs.forEach(input => {
-        input.addEventListener('keypress', function(e) {
-          if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
-              (e.keyCode === 65 && e.ctrlKey === true) ||
-              (e.keyCode === 67 && e.ctrlKey === true) ||
-              (e.keyCode === 86 && e.ctrlKey === true) ||
-              (e.keyCode === 88 && e.ctrlKey === true) ||
-              (e.keyCode >= 35 && e.keyCode <= 39)) {
-            return;
-          }
-          if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
-            e.preventDefault();
-            if (window.Swal && typeof Swal.fire === 'function') {
-              Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Please enter only numbers for contact number.', timer: 2000, showConfirmButton: false });
-            } else {
-              alert('Please enter only numbers for contact number.');
-            }
-          }
-        });
-        input.addEventListener('input', function(e) {
-          const value = this.value;
-          const numericValue = value.replace(/[^0-9]/g, '');
-          if (value !== numericValue) {
-            this.value = numericValue;
-            if (window.Swal && typeof Swal.fire === 'function') {
-              Swal.fire({ icon: 'warning', title: 'Numbers Only', text: 'Only numbers are allowed. Letters have been removed.', timer: 2000, showConfirmButton: false });
-            } else {
-              alert('Only numbers are allowed. Letters have been removed.');
-            }
-          }
-        });
-      });
-    }
     
-    // Load user information to populate contact number
-    async function loadUserInfo() {
-      try {
-        const user = await api('/users/me');
-        
-        // Populate contact number from user profile
-        const contactNumberInput = document.querySelector('input[name="contact_number"]');
-        if (contactNumberInput && user.contact_number) {
-          contactNumberInput.value = user.contact_number;
-        }
-        
-        // Return user for address loading
-        return user;
-      } catch (err) {
-        console.error('Failed to load user info:', err);
-        // Silently fail - user can still enter information manually
-        return null;
-      }
-    }
     
-    // Load saved address from current user's most recent order in database
+    // Load saved address from user's most recent order
     async function loadSavedAddress() {
-      console.log('🔄 loadSavedAddress() called');
-      // Try multiple times to ensure DOM is ready
-      let attempts = 0;
-      const maxAttempts = 15;
-      
-      const tryLoad = async () => {
+      try {
         const shippingAddressInput = document.querySelector('textarea[name="shipping_address"]');
-        console.log('🔍 Looking for address field, attempt', attempts + 1, ':', shippingAddressInput ? 'Found' : 'Not found');
+        if (!shippingAddressInput) return;
         
-        if (shippingAddressInput) {
-          try {
-            console.log('📡 Fetching user info...');
-            // Get current user ID first
-            const user = await api('/users/me');
-            if (!user || !user.id) {
-              console.log('❌ No user ID available');
-              return true;
-            }
-            const currentUserId = user.id;
-            console.log('✅ User ID:', currentUserId);
-            
-            // Fetch orders - DO NOT use &all=true to ensure we only get current user's orders
-            // For regular users, backend filters by user_id automatically
-            // For sellers/admins, we need to filter on frontend to get only their own orders
-            console.log('📡 Fetching orders...');
-            const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
-            console.log('📦 Orders response:', ordersResponse);
-            
-            // Handle different response structures
-            let orders = [];
-            if (Array.isArray(ordersResponse)) {
-              orders = ordersResponse;
-            } else if (ordersResponse && ordersResponse.orders) {
-              orders = ordersResponse.orders;
-            } else if (ordersResponse && Array.isArray(ordersResponse.data)) {
-              orders = ordersResponse.data;
-            }
-            
-            console.log('📋 Parsed orders:', orders);
-            console.log('📊 Total orders found:', orders.length);
-            
-            // Filter to only get orders belonging to the current user
-            // This ensures sellers/admins get their own address, not customer addresses
-            const userOrders = orders.filter(order => {
-              const orderUserId = order.user_id || order.user?.id;
-              const matches = orderUserId === currentUserId;
-              console.log('🔍 Order', order.id, '- User ID:', orderUserId, '- Matches:', matches);
-              return matches;
-            });
-            
-            console.log('👤 User orders after filtering:', userOrders.length);
-            
-            // Get the most recent order from current user's orders
-            if (userOrders && userOrders.length > 0) {
-              const mostRecentOrder = userOrders[0];
-              console.log('📦 Most recent order:', mostRecentOrder);
-              const savedAddress = mostRecentOrder.shipping_address;
-              console.log('📍 Address from order:', savedAddress);
-              
-              if (savedAddress && savedAddress.trim() !== '') {
-                shippingAddressInput.value = savedAddress;
-                console.log('✅ Loaded address from most recent order for user', currentUserId, ':', savedAddress);
-                return true; // Success
-              } else {
-                console.log('⚠️ Most recent order found but no shipping address');
-                return true; // Found order but no address
-              }
-            } else {
-              console.log('ℹ️ No previous orders found for current user', currentUserId);
-              return true; // No orders yet
-            }
-          } catch (err) {
-            console.error('❌ Could not load address from orders:', err);
-            return true; // Silently fail - user can enter manually
+        const ordersResponse = await api('/orders?sort_by=created_at&sort_order=desc');
+        const orders = Array.isArray(ordersResponse) ? ordersResponse : 
+                      (ordersResponse && ordersResponse.orders) ? ordersResponse.orders : [];
+        
+        if (orders && orders.length > 0) {
+          const mostRecentOrder = orders[0];
+          const savedAddress = mostRecentOrder.shipping_address;
+          
+          if (savedAddress && savedAddress.trim() !== '') {
+            shippingAddressInput.value = savedAddress;
           }
-        } else if (attempts < maxAttempts) {
-          attempts++;
-          setTimeout(tryLoad, 150); // Try again after 150ms
-          return false; // Not ready yet
-        } else {
-          console.log('❌ Shipping address textarea not found after', maxAttempts, 'attempts');
-          return false; // Failed
         }
-      };
-      
-      await tryLoad();
+      } catch (err) {
+        // Silently fail - user can enter address manually
+      }
     }
 
-    // Make brand logo non-clickable when logged in
-    function updateBrandLogo() {
-      const brandLogo = document.querySelector('.brand-logo');
-      if (brandLogo && typeof isAuthed === 'function') {
-        if (isAuthed()) {
-          // User is logged in - make it non-clickable
-          if (brandLogo.tagName === 'A') {
-            const text = brandLogo.textContent;
-            const parent = brandLogo.parentNode;
-            const span = document.createElement('span');
-            span.className = brandLogo.className;
-            span.textContent = text;
-            span.style.cursor = 'default';
-            span.style.textDecoration = 'none';
-            parent.replaceChild(span, brandLogo);
-          }
-        } else {
-          // User is not logged in - make it clickable
-          if (brandLogo.tagName !== 'A') {
-            const text = brandLogo.textContent;
-            const parent = brandLogo.parentNode;
-            const link = document.createElement('a');
-            link.className = brandLogo.className;
-            link.href = 'index.html';
-            link.textContent = text;
-            parent.replaceChild(link, brandLogo);
-          }
-        }
-      }
-    }
-    
-    // Update brand logo on page load
-    if (typeof isAuthed === 'function') {
-      updateBrandLogo();
-    }
-    
     // Initialize
-    console.log('🚀 Checkout page initializing...');
     if (typeof requireAuth === 'function') {
-      console.log('🔐 Using requireAuth()');
       requireAuth().then(async () => {
-        console.log('✅ Auth confirmed, loading data...');
         loadCart();
-        await loadUserInfo();
-        setupContactNumberValidation();
-        console.log('📍 About to load saved address...');
-        await loadSavedAddress(); // Load after auth is confirmed
+        await loadSavedAddress(); // Load saved address from previous orders
         if (typeof updateCartBadge === 'function') updateCartBadge();
       });
     } else {
       // Check if user is logged in
       if (typeof isAuthed === 'function' && isAuthed()) {
-        console.log('✅ User is authenticated (isAuthed check)');
         loadCart();
-        loadUserInfo().then(() => {
-          console.log('📍 About to load saved address...');
-          loadSavedAddress(); // Load after user info is loaded
-        });
-        setupContactNumberValidation();
+        loadSavedAddress(); // Load saved address from previous orders
         if (typeof updateCartBadge === 'function') updateCartBadge();
       } else {
-        console.log('ℹ️ User not authenticated');
         loadCart();
-        setupContactNumberValidation();
         if (typeof updateCartBadge === 'function') updateCartBadge();
       }
     }
